@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33723.286
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quick.SL651", "Quick.SL651\Quick.SL651.csproj", "{C607B381-C54A-4F34-8D91-D74259532112}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quick.SL651.Test", "Quick.SL651.Test\Quick.SL651.Test.csproj", "{B92C8F6F-75BB-4A45-B88B-99C0BD4EA121}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C607B381-C54A-4F34-8D91-D74259532112}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C607B381-C54A-4F34-8D91-D74259532112}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C607B381-C54A-4F34-8D91-D74259532112}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C607B381-C54A-4F34-8D91-D74259532112}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B92C8F6F-75BB-4A45-B88B-99C0BD4EA121}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B92C8F6F-75BB-4A45-B88B-99C0BD4EA121}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B92C8F6F-75BB-4A45-B88B-99C0BD4EA121}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B92C8F6F-75BB-4A45-B88B-99C0BD4EA121}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9F0C9033-20F4-492F-A2B2-E51B6111BE7E}
+	EndGlobalSection
+EndGlobal
