@@ -1,7 +1,10 @@
 ﻿using Newtonsoft.Json;
 using Quick.SL651;
+using System.Net;
+using System.Net.Sockets;
 
-var buffer = new byte[] 
+var port = 13210;
+var test_data = new byte[] 
 {
     0x7E,0x7E,
     0x01,
@@ -32,5 +35,26 @@ var buffer = new byte[]
     0x03,
     0x76,0x35
 };
-var messageFrame = MessageFrame.Parse(FrameEncoding.HEX_BCD, buffer);
-Console.WriteLine(JsonConvert.SerializeObject(messageFrame, Formatting.Indented));
+
+var centralStation = new CentralStation(new CentralStationOptions()
+{
+    IPAddress = IPAddress.Loopback,
+    Port = port
+});
+centralStation.Start();
+Console.WriteLine("中心站已启动！");
+_ = Task.Run(async () =>
+{
+    var client = new TcpClient();
+    client.Connect(IPAddress.Loopback, port);
+    var stream = client.GetStream();
+    while (true)
+    {
+        await Task.Delay(5000);
+        await stream.WriteAsync(test_data);
+    }
+});
+Console.ReadLine();
+centralStation.Stop();
+//var messageFrame = MessageFrame.Parse(FrameEncoding.HEX_BCD, buffer);
+//Console.WriteLine(JsonConvert.SerializeObject(messageFrame, Formatting.Indented));

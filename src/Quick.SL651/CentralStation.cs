@@ -9,19 +9,19 @@ namespace Quick.SL651
 {
     public class CentralStation
     {
-        private CentralStationOptions options;
+        public CentralStationOptions Options { get; private set; }
         private TcpListener tcpListener;
         private CancellationTokenSource cts;
         public CentralStation(CentralStationOptions options)
         {
-            this.options = options;
+            this.Options = options;
         }
 
         public void Start()
         {
             cts?.Cancel();
             cts = new CancellationTokenSource();
-            tcpListener = new TcpListener(options.IPAddress, options.Port);
+            tcpListener = new TcpListener(Options.IPAddress, Options.Port);
             tcpListener.Start();
             beginAccept(cts.Token);
         }
@@ -40,7 +40,7 @@ namespace Quick.SL651
                 {
                     return;
                 }
-                var tsContext = new TelemetryStationContext(client, cancellationToken);
+                var tsContext = new TelemetryStationContext(this, client, cancellationToken);
                 tsContext.Start();
             });
         }
