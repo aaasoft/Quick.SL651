@@ -14,10 +14,12 @@ namespace Quick.SL651
         /// </summary>
         public MessageFrameHead Head { get; set; }
         /// <summary>
-        /// 是否是报文结束
+        /// 上行报文
         /// </summary>
-        public bool IsETX { get; set; }
-        public IUpgoingMessage UpgoingMessage { get; set; }
-        public IDowngoingMessage DowngoingMessage { get; set; }
+        public IMessage UpgoingMessage { get; set; }
+        /// <summary>
+        /// 下行报文
+        /// </summary>
+        public IMessage DowngoingMessage { get; set; }
     }
 }

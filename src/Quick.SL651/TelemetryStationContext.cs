@@ -15,7 +15,6 @@ namespace Quick.SL651
         private TcpClient client;
         private NetworkStream stream;
         private byte[] read_buffer = new byte[1024];
-        private byte[] read_buffer2 = new byte[8];
         private byte[] write_buffer = new byte[1024];
 
         /// <summary>
@@ -23,13 +22,17 @@ namespace Quick.SL651
         /// </summary>
         public bool IsConnected { get; private set; } = true;
         /// <summary>
+        /// 遥测站信息
+        /// </summary>
+        public TelemetryStationInfo TelemetryStationInfo { get; private set; }
+        /// <summary>
         /// 帧编码
         /// </summary>
         public FrameEncoding FrameEncoding { get; private set; } = FrameEncoding.Unknown;
         /// <summary>
-        /// 最后收到的消息帧
+        /// 最后收到的消息
         /// </summary>
-        public UpgoingMessageFrame LastMessageFrame { get; private set; }
+        public IMessage LastMessage { get; private set; }
         /// <summary>
         /// 连接建立时
         /// </summary>
@@ -83,105 +86,56 @@ namespace Quick.SL651
             var readTimeout = centralStation.Options.TransportTimeout;
             try
             {
+                //读取帧头
+                var messageFrameHead = new MessageFrameHead();
                 var bufferStartIndex = 0;
-                //读取包头
-                bufferStartIndex += await TransportUtils.ReadData(stream, read_buffer, bufferStartIndex, 2, cancellationToken, readTimeout);
-                //如果是HEX/BCD编码
-                if (read_buffer.StartWith(MessageFrameHead.HEX_BCD_S0H))
-                {
-                    FrameEncoding = FrameEncoding.HEX_BCD;
-                }
-                else if (read_buffer.StartWith(MessageFrameHead.ASCII_S0H))
-                {
-                    FrameEncoding = FrameEncoding.ASCII;
-                }
-                else
-                {
-                    throw new IOException("未知包头：" + BitConverter.ToString(read_buffer, bufferStartIndex - 2, 2));
-                }
-                //读取中心站地址
-                bufferStartIndex += await TransportUtils.ReadData(FrameEncoding, stream, read_buffer, bufferStartIndex, 1, cancellationToken, readTimeout);
-                var centralStationAddress = read_buffer[bufferStartIndex - 1];
-                //读取遥测站地址
-                bufferStartIndex += await TransportUtils.ReadData(FrameEncoding, stream, read_buffer, bufferStartIndex, 5, cancellationToken, readTimeout);
-                var telemetryStationAddress = new Span<byte>(read_buffer, bufferStartIndex - 5, 5).BCD_Decode();
-                //读取密码
-                bufferStartIndex += await TransportUtils.ReadData(FrameEncoding, stream, read_buffer, bufferStartIndex, 2, cancellationToken, readTimeout);
-                var password = new byte[2];
-                password[0] = read_buffer[bufferStartIndex - 2];
-                password[1] = read_buffer[bufferStartIndex - 1];
-                //读取功能码
-                bufferStartIndex += await TransportUtils.ReadData(FrameEncoding, stream, read_buffer, bufferStartIndex, 1, cancellationToken, readTimeout);
-                var functionCode = read_buffer[bufferStartIndex - 1];
-                //读取报文上下行标识和报文长度
-                bufferStartIndex += await TransportUtils.ReadData(FrameEncoding, stream, read_buffer, bufferStartIndex, 2, cancellationToken, readTimeout);
-                read_buffer2[0] = read_buffer[bufferStartIndex - 2];
-                read_buffer2[0] &= 0xF0;
-                var isUpgoing = read_buffer2[0] == 0;
-                if (!isUpgoing)
+                bufferStartIndex = await messageFrameHead.Read(
+                    stream,
+                    read_buffer,
+                    bufferStartIndex,
+                    cancellationToken,
+                    readTimeout);
+
+                if (!messageFrameHead.IsUpgoing)
                     throw new IOException("预期接收上行报文，却收到了下行报文");
-                read_buffer2[0] = read_buffer[bufferStartIndex - 2];
-                read_buffer2[1] = read_buffer[bufferStartIndex - 1];
-                read_buffer2[0] &= 0x0F;
-                //如果CPU是小端字节序，则交换
-                if (BitConverter.IsLittleEndian)
-                {
-                    read_buffer2[2] = read_buffer2[0];
-                    read_buffer2[0] = read_buffer2[1];
-                    read_buffer2[1] = read_buffer2[2];
-                }
-                var messageLength = BitConverter.ToInt16(read_buffer2);
-                //读取报文开始符
-                bufferStartIndex += await TransportUtils.ReadData(FrameEncoding, stream, read_buffer, bufferStartIndex, 1, cancellationToken, readTimeout);
-                if (read_buffer[bufferStartIndex - 1] != MessageFrameHead.STX)
-                    throw new IOException($"意外的字符：0x{read_buffer[bufferStartIndex - 1].ToString("X2")}。预期字符：报文开始符(0x{MessageFrameHead.STX.ToString("X2")})");
-                //读取报文正文
-                var messageStartIndex = bufferStartIndex;
-                bufferStartIndex += await TransportUtils.ReadData(FrameEncoding, stream, read_buffer, bufferStartIndex, messageLength, cancellationToken, readTimeout);
-                //读取报文结束符
-                bufferStartIndex += await TransportUtils.ReadData(FrameEncoding, stream, read_buffer, bufferStartIndex, 1, cancellationToken, readTimeout);
-                //报文结束符
-                var messageEndByte = read_buffer[bufferStartIndex - 1];
-                if (messageEndByte != MessageFrameHead.ETX && messageEndByte != MessageFrameHead.ETB)
-                    throw new IOException($"意外的字符：0x{messageEndByte.ToString("X2")}。预期字符：报文结束符(0x{MessageFrameHead.ETX.ToString("X2")}或者0x{MessageFrameHead.ETB.ToString("X2")})");
+                //读取报文
+                var bufferStartIndexAndMessage = await MessageFactory.Instance.ReadMessage(
+                    messageFrameHead,
+                    stream,
+                    read_buffer,
+                    bufferStartIndex,
+                    cancellationToken,
+                    readTimeout);
+                bufferStartIndex = bufferStartIndexAndMessage.Item1;
+                var message = bufferStartIndexAndMessage.Item2;
                 //读取CRC校验值
-                await TransportUtils.ReadData(FrameEncoding, stream, read_buffer2, 0, 2, cancellationToken, readTimeout);
+                await TransportUtils.ReadData(FrameEncoding, stream, read_buffer, bufferStartIndex, 2, cancellationToken, readTimeout);
                 //校验CRC
                 var crcResult = Crc16.Hash(new ReadOnlySpan<byte>(read_buffer, 0, bufferStartIndex));
-                if (!read_buffer2.StartWith(crcResult))
+                if (read_buffer[bufferStartIndex] != crcResult[0]
+                    || read_buffer[bufferStartIndex + 1] != crcResult[1])
                     throw new IOException("报文帧CRC检验失败！");
-                //帧头
-                var messageHead = new MessageFrameHead(
-                        centralStationAddress,
-                        telemetryStationAddress,
-                        password,
-                        functionCode,
-                        isUpgoing,
-                        messageLength
-                    );
-                //解析完成
-                var messageFrame = new UpgoingMessageFrame(messageHead,
-                    new Memory<byte>(read_buffer, messageStartIndex, messageLength));
+
                 //是否是第一次接收到消息
-                var isFirstMessageFrameArrived = LastMessageFrame == null;
-                LastMessageFrame = messageFrame;
+                var isFirstMessageArrived = LastMessage == null;
+                LastMessage = message;
                 //第一次接收到消息时，触发连接已建立事件
-                if (isFirstMessageFrameArrived)
+                if (isFirstMessageArrived)
                 {
                     WorkMode = centralStation.Options.GetTelemetryStationWorkModeFunc(this);
+                    TelemetryStationInfo = messageFrameHead;
                     Connected?.Invoke(this, EventArgs.Empty);
                 }
                 var messageArrivedEventArgs = new MessageArrivedEventArgs()
                 {
-                    Head = messageHead,
-                    UpgoingMessage = messageFrame.Message,
-                    IsETX = messageEndByte == MessageFrameHead.ETX
+                    Head = messageFrameHead,
+                    UpgoingMessage = message
                 };
                 //触发报文帧已到达事件
                 MessageFrameArrived?.Invoke(this, messageArrivedEventArgs);
 
                 //如果结束符是ETX，且工作模式是M2或者M3，且设置了下行消息，则回复确认收到
-                if (messageEndByte == MessageFrameHead.ETX
+                if (message.IsEndMarkETX
                     && (WorkMode == WorkMode.M2 || WorkMode == WorkMode.M3)
                     && messageArrivedEventArgs.DowngoingMessage != null)
                 {

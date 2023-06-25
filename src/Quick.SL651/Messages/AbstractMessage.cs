@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Quick.SL651.Messages
 {
-    public abstract class AbstractUpgoingMessage : IUpgoingMessage
+    public abstract class AbstractMessage : IMessage
     {
         /// <summary>
         /// 流水号
@@ -16,15 +16,35 @@ namespace Quick.SL651.Messages
         /// 发报时间
         /// </summary>
         public DateTime SendTime { get; private set; }
+        /// <summary>
+        /// 报文结束符
+        /// </summary>
+        public byte EndMark { get; set; }
+        /// <summary>
+        /// 报文结束符是否是ETX
+        /// </summary>
+        public bool IsEndMarkETX => EndMark == MessageFrameHead.ETX;
 
-        public AbstractUpgoingMessage(Memory<byte> t)
+        public AbstractMessage(int serialNumber, DateTime sendTime)
+            : this(serialNumber, sendTime, MessageFrameHead.ETX)
         {
-            var serialNumberSpan = t.Slice(0, 2).Span;
+        }
+
+        public AbstractMessage(int serialNumber, DateTime sendTime, byte endMark)
+        {
+            SerialNumber = serialNumber;
+            SendTime = sendTime;
+            EndMark = endMark;
+        }
+
+        public AbstractMessage(Memory<byte> memory)
+        {
+            var serialNumberSpan = new Span<byte>(memory.Slice(0, 2).ToArray());
             if (BitConverter.IsLittleEndian)
                 serialNumberSpan.Reverse();
             SerialNumber = BitConverter.ToInt16(serialNumberSpan);
 
-            var sendTimeSpan = t.Slice(2, 6).Span;
+            var sendTimeSpan = memory.Slice(2, 6).Span;
             var sendTimeStr = sendTimeSpan.BCD_Decode();
             var nowTime = DateTime.Now;
             var yearPrefix = (nowTime.Year / 100).ToString();

@@ -43,15 +43,14 @@ var centralStation = new CentralStation(new CentralStationOptions()
 });
 centralStation.TelemetryStationConnected += (sender, telemetryStation) =>
 {
-    var messageFrame = telemetryStation.LastMessageFrame;
-    Console.WriteLine($"遥测站[地址：{messageFrame.Head.TelemetryStationAddress},端点：{telemetryStation.RemoteEndPoint}]已连接！");
-    telemetryStation.Disconnected += (sender2, ex) =>
+    Console.WriteLine($"遥测站[端点：{telemetryStation.RemoteEndPoint}]已连接！遥测站地址：{telemetryStation.TelemetryStationInfo.TelemetryStationAddress}");
+    telemetryStation.Disconnected += (sender2, e) =>
     {
-        Console.WriteLine($"遥测站[地址：{messageFrame.Head.TelemetryStationAddress},端点：{telemetryStation.RemoteEndPoint}]的连接已断开！");
+        Console.WriteLine($"遥测站[端点：{telemetryStation.RemoteEndPoint}]的连接已断开！");
     };
-    telemetryStation.MessageFrameArrived += (sender2, messageFrame) =>
+    telemetryStation.MessageFrameArrived += (sender2, e) =>
     {
-        Console.WriteLine($"遥测站[地址：{messageFrame.Head.TelemetryStationAddress},端点：{telemetryStation.RemoteEndPoint}]接收到报文帧：{messageFrame.UpgoingMessage.GetType().FullName}");
+        Console.WriteLine($"遥测站[端点：{telemetryStation.RemoteEndPoint}]接收到报文帧：{e.UpgoingMessage.GetType().FullName}");
     };
 };
 centralStation.Start();

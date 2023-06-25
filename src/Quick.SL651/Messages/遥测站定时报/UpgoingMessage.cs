@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Quick.SL651.Messages.遥测站定时报
 {
-    public class UpgoingMessage : AbstractUpgoingMessage
+    public class UpgoingMessage : AbstractMessage
     {
         public const byte FunctionCode = 0x32;
 
