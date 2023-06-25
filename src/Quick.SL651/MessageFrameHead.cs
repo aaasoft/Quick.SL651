@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Quick.SL651.Messages
+namespace Quick.SL651
 {
-    public abstract class AbstractMessageFrame
+    public class MessageFrameHead
     {
         /// <summary>
         /// ASCII编码帧起始符
@@ -29,29 +29,38 @@ namespace Quick.SL651.Messages
         /// </summary>
         public readonly static byte ETB = 0x17;
 
+        public MessageFrameHead(byte centralStationAddress, string telemetryStationAddress, byte[] password, byte functionCode, short messageLength)
+        {
+            CentralStationAddress = centralStationAddress;
+            TelemetryStationAddress = telemetryStationAddress;
+            Password = password;
+            FunctionCode = functionCode;
+            MessageLength = messageLength;
+        }
+
         /// <summary>
         /// 中心站地址
         /// </summary>
-        public byte CentralStationAddress { get; protected set; }
+        public byte CentralStationAddress { get; set; }
         /// <summary>
         /// 遥测站地址
         /// </summary>
-        public string TelemetryStationAddress { get; protected set; }
+        public string TelemetryStationAddress { get; set; }
         /// <summary>
         /// 密码
         /// </summary>
-        public byte[] Password { get; protected set; }
+        public byte[] Password { get; set; }
         /// <summary>
         /// 功能码
         /// </summary>
-        public byte FunctionCode { get; protected set; }
+        public byte FunctionCode { get; set; }
         /// <summary>
         /// 是否上行
         /// </summary>
-        public abstract bool IsUpgoing { get; }
+        public bool IsUpgoing { get; set; }
         /// <summary>
         /// 报文长度
         /// </summary>
-        public int MessageLength { get; protected set; }
+        public int MessageLength { get; set; }
     }
 }

@@ -1,35 +1,26 @@
 ﻿using Quick.SL651.Messages;
-using System;
-using System.Collections.Generic;
-using System.IO.Hashing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Quick.SL651
 {
-    public class UpgoingMessageFrame : AbstractMessageFrame
+    public class UpgoingMessageFrame
     {
-        public override bool IsUpgoing => true;
+        /// <summary>
+        /// 帧头
+        /// </summary>
+        public MessageFrameHead Head { get; private set; }
+
         /// <summary>
         /// 报文内容
         /// </summary>
         public IUpgoingMessage Message { get; private set; }
 
         public UpgoingMessageFrame(
-            byte centralStationAddress,
-            string telemetryStationAddress,
-            byte[] password,
-            byte functionCode,
-            Memory<byte> messageData)
+            MessageFrameHead head,
+            Memory<byte> body)
         {
-            CentralStationAddress = centralStationAddress;
-            TelemetryStationAddress = telemetryStationAddress;
-            Password = password;
-            FunctionCode = functionCode;
-            MessageLength = messageData.Length;
+            Head = head;
             //解析报文
-            Message = MessageFactory.Instance.ParseUpgoingMessage(functionCode, messageData);
+            Message = MessageFactory.Instance.ParseUpgoingMessage(head.FunctionCode, body);
         }
     }
 }
