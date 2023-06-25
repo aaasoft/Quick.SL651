@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Quick.SL651
+namespace Quick.SL651.Messages.遥测站小时报
 {
-    public interface IMessage
+    public class DowngoingMessage : IDowngoingMessage
     {
-        byte FunctionCode { get; }
+
     }
 }

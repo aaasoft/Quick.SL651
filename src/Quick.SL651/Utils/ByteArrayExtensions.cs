@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace System
 {
-    public static class ByteArrayExensions
+    public static class ByteArrayExtensions
     {
         public static bool StartWith(this byte[] buffer, ReadOnlySpan<byte> value)
         {

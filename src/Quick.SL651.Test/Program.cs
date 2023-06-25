@@ -41,6 +41,19 @@ var centralStation = new CentralStation(new CentralStationOptions()
     IPAddress = IPAddress.Loopback,
     Port = port
 });
+centralStation.TelemetryStationConnected += (sender, telemetryStation) =>
+{
+    var messageFrame = telemetryStation.LastMessageFrame;
+    Console.WriteLine($"遥测站[地址：{messageFrame.TelemetryStationAddress},端点：{telemetryStation.RemoteEndPoint}]已连接！");
+    telemetryStation.Disconnected += (sender2, ex) =>
+    {
+        Console.WriteLine($"遥测站[地址：{messageFrame.TelemetryStationAddress},端点：{telemetryStation.RemoteEndPoint}]的连接已断开！");
+    };
+    telemetryStation.MessageFrameArrived += (sender2, messageFrame) =>
+    {
+        Console.WriteLine($"遥测站[地址：{messageFrame.TelemetryStationAddress},端点：{telemetryStation.RemoteEndPoint}]接收到报文帧：{messageFrame.Message.GetType().FullName}");
+    };
+};
 centralStation.Start();
 Console.WriteLine("中心站已启动！");
 _ = Task.Run(async () =>
@@ -56,5 +69,3 @@ _ = Task.Run(async () =>
 });
 Console.ReadLine();
 centralStation.Stop();
-//var messageFrame = MessageFrame.Parse(FrameEncoding.HEX_BCD, buffer);
-//Console.WriteLine(JsonConvert.SerializeObject(messageFrame, Formatting.Indented));

@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO.Hashing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Quick.SL651
+namespace Quick.SL651.Messages
 {
-    public class MessageFrame
+    public abstract class AbstractMessageFrame
     {
         /// <summary>
         /// ASCII编码帧起始符
@@ -30,50 +29,29 @@ namespace Quick.SL651
         /// </summary>
         public readonly static byte ETB = 0x17;
 
-        public MessageFrame(
-            byte centralStationAddress,
-            string telemetryStationAddress,
-            byte[] password,
-            byte functionCode,
-            bool isUpgoing,
-            byte[] message,
-            int messageStartIndex,
-            int messageLength)
-        {
-            CentralStationAddress = centralStationAddress;
-            TelemetryStationAddress = telemetryStationAddress;
-            Password = password;
-            FunctionCode = functionCode;
-            IsUpgoing = isUpgoing;
-            MessageLength = messageLength;
-
-            //解析报文
-            //message;
-        }
-
         /// <summary>
         /// 中心站地址
         /// </summary>
-        public byte CentralStationAddress { get; private set; }
+        public byte CentralStationAddress { get; protected set; }
         /// <summary>
         /// 遥测站地址
         /// </summary>
-        public string TelemetryStationAddress { get; private set; }
+        public string TelemetryStationAddress { get; protected set; }
         /// <summary>
         /// 密码
         /// </summary>
-        public byte[] Password { get; private set; }
+        public byte[] Password { get; protected set; }
         /// <summary>
         /// 功能码
         /// </summary>
-        public byte FunctionCode { get; private set; }
+        public byte FunctionCode { get; protected set; }
         /// <summary>
         /// 是否上行
         /// </summary>
-        public bool IsUpgoing { get; private set; }
+        public abstract bool IsUpgoing { get; }
         /// <summary>
         /// 报文长度
         /// </summary>
-        public int MessageLength { get; private set; }
+        public int MessageLength { get; protected set; }
     }
 }

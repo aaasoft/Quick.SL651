@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 namespace Quick.SL651.Messages
 {
     /// <summary>
-    /// 遥测站小时报
+    /// 下行报文，中心站发给遥测站报文
     /// </summary>
-    public class HourMessage : IMessage
+    public interface IDowngoingMessage
     {
-        public byte FunctionCode => 0x33;
+
     }
 }

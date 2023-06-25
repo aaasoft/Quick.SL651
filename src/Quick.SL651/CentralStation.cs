@@ -12,6 +12,9 @@ namespace Quick.SL651
         public CentralStationOptions Options { get; private set; }
         private TcpListener tcpListener;
         private CancellationTokenSource cts;
+        public event EventHandler<TelemetryStationContext> TelemetryStationConnected;
+        private List<TelemetryStationContext> telemetryStationList = new List<TelemetryStationContext>();
+
         public CentralStation(CentralStationOptions options)
         {
             this.Options = options;
@@ -40,16 +43,48 @@ namespace Quick.SL651
                 {
                     return;
                 }
-                var tsContext = new TelemetryStationContext(this, client, cancellationToken);
-                tsContext.Start();
+                var telemetryStation = new TelemetryStationContext(this, client, cancellationToken);
+                lock (telemetryStationList)
+                    telemetryStationList.Add(telemetryStation);
+                telemetryStation.Connected += TelemetryStation_Connected;
+                telemetryStation.Disconnected += TelemetryStation_Disconnected;
+                telemetryStation.Start();
             });
+        }
+
+        private void TelemetryStation_Disconnected(object sender, Exception e)
+        {
+            var telemetryStation = (TelemetryStationContext)sender;
+            telemetryStation.Connected -= TelemetryStation_Connected;
+            telemetryStation.Disconnected -= TelemetryStation_Disconnected;
+            lock (telemetryStationList)
+                telemetryStationList.Remove(telemetryStation);
+        }
+
+        private void TelemetryStation_Connected(object sender, EventArgs e)
+        {
+            var telemetryStation = (TelemetryStationContext)sender;
+            TelemetryStationConnected?.Invoke(this, telemetryStation);
         }
 
         public void Stop()
         {
             cts?.Cancel();
             cts = null;
-            tcpListener.Stop();
+            tcpListener?.Stop();
+            tcpListener = null;
+            TelemetryStationContext[] telemetryStations = null;
+            lock (telemetryStationList)
+            {
+                telemetryStations = telemetryStationList.ToArray();
+                telemetryStationList.Clear();
+            }
+            //移除事件绑定
+            foreach (var telemetryStation in telemetryStations)
+            {
+                telemetryStation.Connected -= TelemetryStation_Connected;
+                telemetryStation.Disconnected -= TelemetryStation_Disconnected;
+            }
         }
     }
 }

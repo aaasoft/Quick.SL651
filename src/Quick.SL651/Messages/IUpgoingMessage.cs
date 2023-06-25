@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 namespace Quick.SL651.Messages
 {
     /// <summary>
-    /// 测试报
+    /// 上行报文，遥测站发给中心站报文
     /// </summary>
-    public class TestMessage : IMessage
+    public interface IUpgoingMessage
     {
-        public byte FunctionCode => 0x30;
+
     }
 }
