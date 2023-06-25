@@ -29,12 +29,19 @@ namespace Quick.SL651
         /// </summary>
         public readonly static byte ETB = 0x17;
 
-        public MessageFrameHead(byte centralStationAddress, string telemetryStationAddress, byte[] password, byte functionCode, short messageLength)
+        public MessageFrameHead(
+            byte centralStationAddress,
+            string telemetryStationAddress,
+            byte[] password,
+            byte functionCode,
+            bool isUpgoing,
+            short messageLength)
         {
             CentralStationAddress = centralStationAddress;
             TelemetryStationAddress = telemetryStationAddress;
             Password = password;
             FunctionCode = functionCode;
+            IsUpgoing = isUpgoing;
             MessageLength = messageLength;
         }
 

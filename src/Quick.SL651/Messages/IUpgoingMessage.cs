@@ -11,6 +11,7 @@ namespace Quick.SL651.Messages
     /// </summary>
     public interface IUpgoingMessage
     {
-
+        int SerialNumber { get; }
+        DateTime SendTime { get; }
     }
 }

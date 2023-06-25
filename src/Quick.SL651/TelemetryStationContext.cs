@@ -155,6 +155,7 @@ namespace Quick.SL651
                         telemetryStationAddress,
                         password,
                         functionCode,
+                        isUpgoing,
                         messageLength
                     );
                 //解析完成
@@ -172,17 +173,17 @@ namespace Quick.SL651
                 var messageArrivedEventArgs = new MessageArrivedEventArgs()
                 {
                     Head = messageHead,
-                    UpgoingMessage = messageFrame.Message
+                    UpgoingMessage = messageFrame.Message,
+                    IsETX = messageEndByte == MessageFrameHead.ETX
                 };
                 //触发报文帧已到达事件
                 MessageFrameArrived?.Invoke(this, messageArrivedEventArgs);
 
-                //如果结束符是ETX，且工作模式是M2，且设置了下行消息，则回复确认收到
+                //如果结束符是ETX，且工作模式是M2或者M3，且设置了下行消息，则回复确认收到
                 if (messageEndByte == MessageFrameHead.ETX
-                    && WorkMode == WorkMode.M2
+                    && (WorkMode == WorkMode.M2 || WorkMode == WorkMode.M3)
                     && messageArrivedEventArgs.DowngoingMessage != null)
                 {
-
                     //stream.Write(write_buffer);
                 }
             }
