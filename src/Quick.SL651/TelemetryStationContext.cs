@@ -80,11 +80,12 @@ namespace Quick.SL651
         {
             if (!IsConnected || cancellationToken.IsCancellationRequested)
                 return;
+            var readTimeout = centralStation.Options.TransportTimeout;
             try
             {
                 var bufferStartIndex = 0;
                 //读取包头
-                bufferStartIndex += await readData(read_buffer, bufferStartIndex, 2, cancellationToken);
+                bufferStartIndex += await TransportUtils.ReadData(stream, read_buffer, bufferStartIndex, 2, cancellationToken, readTimeout);
                 //如果是HEX/BCD编码
                 if (read_buffer.StartWith(MessageFrameHead.HEX_BCD_S0H))
                 {
@@ -99,21 +100,21 @@ namespace Quick.SL651
                     throw new IOException("未知包头：" + BitConverter.ToString(read_buffer, bufferStartIndex - 2, 2));
                 }
                 //读取中心站地址
-                bufferStartIndex += await readData(FrameEncoding, read_buffer, bufferStartIndex, 1, cancellationToken);
+                bufferStartIndex += await TransportUtils.ReadData(FrameEncoding, stream, read_buffer, bufferStartIndex, 1, cancellationToken, readTimeout);
                 var centralStationAddress = read_buffer[bufferStartIndex - 1];
                 //读取遥测站地址
-                bufferStartIndex += await readData(FrameEncoding, read_buffer, bufferStartIndex, 5, cancellationToken);
+                bufferStartIndex += await TransportUtils.ReadData(FrameEncoding, stream, read_buffer, bufferStartIndex, 5, cancellationToken, readTimeout);
                 var telemetryStationAddress = new Span<byte>(read_buffer, bufferStartIndex - 5, 5).BCD_Decode();
                 //读取密码
-                bufferStartIndex += await readData(FrameEncoding, read_buffer, bufferStartIndex, 2, cancellationToken);
+                bufferStartIndex += await TransportUtils.ReadData(FrameEncoding, stream, read_buffer, bufferStartIndex, 2, cancellationToken, readTimeout);
                 var password = new byte[2];
                 password[0] = read_buffer[bufferStartIndex - 2];
                 password[1] = read_buffer[bufferStartIndex - 1];
                 //读取功能码
-                bufferStartIndex += await readData(FrameEncoding, read_buffer, bufferStartIndex, 1, cancellationToken);
+                bufferStartIndex += await TransportUtils.ReadData(FrameEncoding, stream, read_buffer, bufferStartIndex, 1, cancellationToken, readTimeout);
                 var functionCode = read_buffer[bufferStartIndex - 1];
                 //读取报文上下行标识和报文长度
-                bufferStartIndex += await readData(FrameEncoding, read_buffer, bufferStartIndex, 2, cancellationToken);
+                bufferStartIndex += await TransportUtils.ReadData(FrameEncoding, stream, read_buffer, bufferStartIndex, 2, cancellationToken, readTimeout);
                 read_buffer2[0] = read_buffer[bufferStartIndex - 2];
                 read_buffer2[0] &= 0xF0;
                 var isUpgoing = read_buffer2[0] == 0;
@@ -131,20 +132,20 @@ namespace Quick.SL651
                 }
                 var messageLength = BitConverter.ToInt16(read_buffer2);
                 //读取报文开始符
-                bufferStartIndex += await readData(FrameEncoding, read_buffer, bufferStartIndex, 1, cancellationToken);
+                bufferStartIndex += await TransportUtils.ReadData(FrameEncoding, stream, read_buffer, bufferStartIndex, 1, cancellationToken, readTimeout);
                 if (read_buffer[bufferStartIndex - 1] != MessageFrameHead.STX)
                     throw new IOException($"意外的字符：0x{read_buffer[bufferStartIndex - 1].ToString("X2")}。预期字符：报文开始符(0x{MessageFrameHead.STX.ToString("X2")})");
                 //读取报文正文
                 var messageStartIndex = bufferStartIndex;
-                bufferStartIndex += await readData(FrameEncoding, read_buffer, bufferStartIndex, messageLength, cancellationToken);
+                bufferStartIndex += await TransportUtils.ReadData(FrameEncoding, stream, read_buffer, bufferStartIndex, messageLength, cancellationToken, readTimeout);
                 //读取报文结束符
-                bufferStartIndex += await readData(FrameEncoding, read_buffer, bufferStartIndex, 1, cancellationToken);
+                bufferStartIndex += await TransportUtils.ReadData(FrameEncoding, stream, read_buffer, bufferStartIndex, 1, cancellationToken, readTimeout);
                 //报文结束符
                 var messageEndByte = read_buffer[bufferStartIndex - 1];
                 if (messageEndByte != MessageFrameHead.ETX && messageEndByte != MessageFrameHead.ETB)
                     throw new IOException($"意外的字符：0x{messageEndByte.ToString("X2")}。预期字符：报文结束符(0x{MessageFrameHead.ETX.ToString("X2")}或者0x{MessageFrameHead.ETB.ToString("X2")})");
                 //读取CRC校验值
-                await readData(FrameEncoding, read_buffer2, 0, 2, cancellationToken);
+                await TransportUtils.ReadData(FrameEncoding, stream, read_buffer2, 0, 2, cancellationToken, readTimeout);
                 //校验CRC
                 var crcResult = Crc16.Hash(new ReadOnlySpan<byte>(read_buffer, 0, bufferStartIndex));
                 if (!read_buffer2.StartWith(crcResult))
@@ -197,45 +198,6 @@ namespace Quick.SL651
                 return;
             }
             _ = beginReadData();
-        }
-
-        private async Task<int> readData(FrameEncoding frameEncoding, byte[] buffer, int startIndex, int totalCount, CancellationToken cancellationToken)
-        {
-            var sourceTotalCount = totalCount;
-            //如果是ASCII编码，读取的字节数翻倍
-            if (frameEncoding == FrameEncoding.ASCII)
-                totalCount *= 2;
-            await readData(buffer, startIndex, totalCount, cancellationToken);
-            //将ASCII编码转换为HEX/BCD编码
-            if (frameEncoding == FrameEncoding.ASCII)
-                for (var i = 0; i < totalCount; i += 2)
-                {
-                    var str = Encoding.ASCII.GetString(buffer, startIndex + i, 2);
-                    var b = byte.Parse(str, System.Globalization.NumberStyles.HexNumber);
-                    buffer[i / 2 + startIndex] = b;
-                }
-            return sourceTotalCount;
-        }
-
-        private async Task<int> readData(byte[] buffer, int startIndex, int totalCount, CancellationToken cancellationToken)
-        {
-            if (totalCount > buffer.Length - startIndex)
-                throw new IOException($"Recv data length[{totalCount}] bigger than buffer length[{buffer.Length - startIndex}]");
-            int ret;
-            var count = 0;
-            while (count < totalCount)
-            {
-                if (cancellationToken.IsCancellationRequested)
-                    break;
-                var readTask = stream.ReadAsync(buffer, count + startIndex, totalCount - count, cancellationToken);
-                ret = await await TaskUtils.TaskWait(readTask, centralStation.Options.TransportTimeout);
-                if (readTask.IsCanceled || ret == 0)
-                    break;
-                if (ret < 0)
-                    throw new IOException("Read error from stream.");
-                count += ret;
-            }
-            return count;
         }
     }
 }

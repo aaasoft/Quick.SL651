@@ -61,7 +61,7 @@ _ = Task.Run(async () =>
     var client = new TcpClient();
     client.Connect(IPAddress.Loopback, port);
     var stream = client.GetStream();
-    while (true)
+    for (var i = 0; i < 10; i++)
     {
         await Task.Delay(5000);
         await stream.WriteAsync(test_data);
