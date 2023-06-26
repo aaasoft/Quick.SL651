@@ -16,25 +16,11 @@ namespace Quick.SL651.Messages
         /// 发报时间
         /// </summary>
         public DateTime SendTime { get; private set; }
-        /// <summary>
-        /// 报文结束符
-        /// </summary>
-        public byte EndMark { get; set; }
-        /// <summary>
-        /// 报文结束符是否是ETX
-        /// </summary>
-        public bool IsEndMarkETX => EndMark == MessageFrameHead.ETX;
 
         public AbstractMessage(int serialNumber, DateTime sendTime)
-            : this(serialNumber, sendTime, MessageFrameHead.ETX)
-        {
-        }
-
-        public AbstractMessage(int serialNumber, DateTime sendTime, byte endMark)
         {
             SerialNumber = serialNumber;
             SendTime = sendTime;
-            EndMark = endMark;
         }
 
         public AbstractMessage(Memory<byte> memory)

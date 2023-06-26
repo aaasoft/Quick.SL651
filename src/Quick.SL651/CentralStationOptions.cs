@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Quick.SL651.Enums;
 
 namespace Quick.SL651
 {

@@ -4,24 +4,28 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Quick.SL651
+namespace Quick.SL651.Enums
 {
     /// <summary>
-    /// 帧编码
+    /// 工作模式
     /// </summary>
-    public enum FrameEncoding
+    public enum WorkMode
     {
         /// <summary>
-        /// 未知
+        /// 发送/无回答
         /// </summary>
-        Unknown,
+        M1,
         /// <summary>
-        /// ASCII编码
+        /// 发送/确认
         /// </summary>
-        ASCII,
+        M2,
         /// <summary>
-        /// HEX/BCD编码
+        /// 多包发送/确认
         /// </summary>
-        HEX_BCD
+        M3,
+        /// <summary>
+        /// 查询/响应
+        /// </summary>
+        M4
     }
 }

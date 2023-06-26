@@ -19,13 +19,5 @@ namespace Quick.SL651.Messages
         /// 发报时间
         /// </summary>
         DateTime SendTime { get; }
-        /// <summary>
-        /// 报文结束符
-        /// </summary>
-        byte EndMark { get; set; }
-        /// <summary>
-        /// 报文结束符是否是ETX
-        /// </summary>
-        bool IsEndMarkETX { get; }
     }
 }

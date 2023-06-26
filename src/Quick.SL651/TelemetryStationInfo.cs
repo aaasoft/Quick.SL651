@@ -3,11 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Quick.SL651.Enums;
 
 namespace Quick.SL651
 {
     public class TelemetryStationInfo
     {
+        /// <summary>
+        /// 帧编码
+        /// </summary>
+        public FrameEncoding FrameEncoding { get; set; }
         /// <summary>
         /// 中心站地址
         /// </summary>

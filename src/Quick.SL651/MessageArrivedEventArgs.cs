@@ -10,9 +10,9 @@ namespace Quick.SL651
     public class MessageArrivedEventArgs : EventArgs
     {
         /// <summary>
-        /// 头
+        /// 帧信息
         /// </summary>
-        public MessageFrameHead Head { get; set; }
+        public MessageFrameInfo FrameInfo { get; set; }
         /// <summary>
         /// 上行报文
         /// </summary>
