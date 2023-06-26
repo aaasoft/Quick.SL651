@@ -90,14 +90,13 @@ namespace Quick.SL651
                 var messageFrameHead = new MessageFrameHead();
                 var bufferStartIndex = 0;
                 bufferStartIndex = await messageFrameHead.Read(
+                    true,
                     stream,
                     read_buffer,
                     bufferStartIndex,
                     cancellationToken,
                     readTimeout);
 
-                if (!messageFrameHead.IsUpgoing)
-                    throw new IOException("预期接收上行报文，却收到了下行报文");
                 //读取报文
                 var bufferStartIndexAndMessage = await MessageFactory.Instance.ReadMessage(
                     messageFrameHead,
