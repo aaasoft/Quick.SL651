@@ -13,6 +13,6 @@ namespace Quick.SL651
         public IPAddress IPAddress { get; set; }
         public int Port { get; set; }
         public int TransportTimeout { get; set; } = 1 * 60 * 1000;
-        public Func<TelemetryStationContext, WorkMode> GetTelemetryStationWorkModeFunc { get; set; } = t => WorkMode.M1;
+        public WorkMode WorkMode { get; set; } = WorkMode.M2;
     }
 }

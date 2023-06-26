@@ -163,7 +163,8 @@ namespace Quick.SL651
         private async Task<int> ReadTelemetryStationAddress(Stream stream, byte[] read_buffer, int bufferStartIndex, CancellationToken cancellationToken, int readTimeout)
         {
             bufferStartIndex += await TransportUtils.ReadData(FrameEncoding, stream, read_buffer, bufferStartIndex, 5, cancellationToken, readTimeout);
-            TelemetryStationAddress = new Span<byte>(read_buffer, bufferStartIndex - 5, 5).BCD_Decode();
+            TelemetryStationAddress = new Span<byte>(read_buffer, bufferStartIndex - 5, 5).ToArray();
+            TelemetryStationAddress_Text = new Span<byte>(TelemetryStationAddress).BCD_Decode();
             return bufferStartIndex;
         }
 

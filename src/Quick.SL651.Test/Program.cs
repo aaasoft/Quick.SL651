@@ -43,7 +43,7 @@ var centralStation = new CentralStation(new CentralStationOptions()
 });
 centralStation.TelemetryStationConnected += (sender, telemetryStation) =>
 {
-    Console.WriteLine($"遥测站[端点：{telemetryStation.RemoteEndPoint}]已连接！遥测站地址：{telemetryStation.TelemetryStationInfo.TelemetryStationAddress}");
+    Console.WriteLine($"遥测站[端点：{telemetryStation.RemoteEndPoint}]已连接！遥测站地址：{telemetryStation.TelemetryStationInfo.TelemetryStationAddress_Text}");
     telemetryStation.Disconnected += (sender2, e) =>
     {
         Console.WriteLine($"遥测站[端点：{telemetryStation.RemoteEndPoint}]的连接已断开！");

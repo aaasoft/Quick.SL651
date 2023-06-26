@@ -20,7 +20,11 @@ namespace Quick.SL651
         /// <summary>
         /// 遥测站地址
         /// </summary>
-        public string TelemetryStationAddress { get; set; }
+        public byte[] TelemetryStationAddress { get; set; }
+        /// <summary>
+        /// 遥测站地址文本形式
+        /// </summary>
+        public string TelemetryStationAddress_Text { get; set; }
         /// <summary>
         /// 密码
         /// </summary>

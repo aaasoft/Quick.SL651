@@ -14,10 +14,16 @@ namespace Quick.SL651.Messages
         /// <summary>
         /// 流水号
         /// </summary>
-        int SerialNumber { get; }
+        ushort SerialNumber { get; }
         /// <summary>
         /// 发报时间
         /// </summary>
         DateTime SendTime { get; }
+        /// <summary>
+        /// 写入到流
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <returns></returns>
+        int WriteTo(Stream stream);
     }
 }

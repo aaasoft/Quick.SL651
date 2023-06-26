@@ -43,7 +43,7 @@ namespace Quick.SL651
                 {
                     return;
                 }
-                var telemetryStation = new TelemetryStationContext(this, client, cancellationToken);
+                var telemetryStation = new TelemetryStationContext(client, cancellationToken, Options.TransportTimeout, Options.WorkMode);
                 lock (telemetryStationList)
                     telemetryStationList.Add(telemetryStation);
                 telemetryStation.Connected += TelemetryStation_Connected;
