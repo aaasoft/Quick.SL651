@@ -25,16 +25,51 @@ namespace Quick.SL651.Messages
 
         public AbstractMessage(Memory<byte> memory)
         {
-            var serialNumberSpan = new Span<byte>(memory.Slice(0, 2).ToArray());
+            Parse(memory.Span);
+        }
+
+        //读取流水号
+        private int ReadSerialNumber(Span<byte> span)
+        {
+            var serialNumberSpan = span.Slice(0, 2);
             if (BitConverter.IsLittleEndian)
                 serialNumberSpan.Reverse();
             SerialNumber = BitConverter.ToUInt16(serialNumberSpan);
+            if (BitConverter.IsLittleEndian)
+                serialNumberSpan.Reverse();
+            return serialNumberSpan.Length;
+        }
 
-            var sendTimeSpan = memory.Slice(2, 6).Span;
-            var sendTimeStr = sendTimeSpan.BCD_Decode();
+        //读取发报时间
+        private int ReadSendTime(Span<byte> span)
+        {
+            var sendTimeSpan = span.Slice(0, 6);
+            SendTime = ReadTimeFromBytes(sendTimeSpan);
+            return sendTimeSpan.Length;
+        }
+
+        protected DateTime ReadTimeFromBytes(Span<byte> span)
+        {
+            var sendTimeStr = span.BCD_Decode();
             var nowTime = DateTime.Now;
             var yearPrefix = (nowTime.Year / 100).ToString();
-            SendTime = DateTime.Parse($"{yearPrefix}{sendTimeStr.Substring(0, 2)}-{sendTimeStr.Substring(2, 2)}-{sendTimeStr.Substring(4, 2)} {sendTimeStr.Substring(6, 2)}:{sendTimeStr.Substring(8, 2)}:{sendTimeStr.Substring(10, 2)}");
+            switch (span.Length)
+            {
+                case 5:
+                    return DateTime.Parse($"{yearPrefix}{sendTimeStr.Substring(0, 2)}-{sendTimeStr.Substring(2, 2)}-{sendTimeStr.Substring(4, 2)} {sendTimeStr.Substring(6, 2)}:{sendTimeStr.Substring(8, 2)}:00");
+                case 6:
+                    return DateTime.Parse($"{yearPrefix}{sendTimeStr.Substring(0, 2)}-{sendTimeStr.Substring(2, 2)}-{sendTimeStr.Substring(4, 2)} {sendTimeStr.Substring(6, 2)}:{sendTimeStr.Substring(8, 2)}:{sendTimeStr.Substring(10, 2)}");
+            }
+            throw new IOException("解析时间失败，字节数组长度错误。");
+        }
+
+        protected virtual Span<byte> Parse(Span<byte> span)
+        {
+            //读取流水号
+            span = span.Slice(ReadSerialNumber(span));
+            //读取发报时间
+            span = span.Slice(ReadSendTime(span));
+            return span;
         }
 
         public int WriteTo(Stream stream)

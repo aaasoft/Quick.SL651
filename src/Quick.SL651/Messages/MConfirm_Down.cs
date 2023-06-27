@@ -9,9 +9,9 @@ namespace Quick.SL651.Messages
     /// <summary>
     /// 确认下行报文
     /// </summary>
-    public class ConfirmDowngoingMessage : AbstractMessage
+    public class MConfirm_Down : AbstractMessage
     {
-        public ConfirmDowngoingMessage(ushort serialNumber, DateTime sendTime)
+        public MConfirm_Down(ushort serialNumber, DateTime sendTime)
             : base(serialNumber, sendTime)
         {
         }

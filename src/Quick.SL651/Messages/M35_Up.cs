@@ -9,7 +9,7 @@ namespace Quick.SL651.Messages
     /// <summary>
     /// 遥测站人工置数报上行报文
     /// </summary>
-    public class M35_Up : AbstractMessage
+    public class M35_Up : AbstractMessageWithPointData
     {
         public M35_Up(Memory<byte> t)
             : base(t)

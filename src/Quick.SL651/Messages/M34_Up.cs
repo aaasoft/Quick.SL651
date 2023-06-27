@@ -9,7 +9,7 @@ namespace Quick.SL651.Messages
     /// <summary>
     /// 遥测站小时报上行报文
     /// </summary>
-    public class M34_Up : AbstractMessage
+    public class M34_Up : AbstractMessageWithPointData
     {
         public M34_Up(Memory<byte> t)
             : base(t)

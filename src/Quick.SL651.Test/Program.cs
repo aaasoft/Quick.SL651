@@ -50,7 +50,7 @@ centralStation.TelemetryStationConnected += (sender, telemetryStation) =>
     };
     telemetryStation.MessageFrameArrived += (sender2, e) =>
     {
-        Console.WriteLine($"遥测站[端点：{telemetryStation.RemoteEndPoint}]接收到报文帧：{e.UpgoingMessage.GetType().FullName}");
+        Console.WriteLine($"遥测站[端点：{telemetryStation.RemoteEndPoint}]接收到报文帧：{e.UpgoingMessage.GetType().Name}");
     };
 };
 centralStation.Start();
