@@ -9,12 +9,12 @@ namespace Quick.SL651.Messages
         private Dictionary<FunctionCodes, Func<Memory<byte>, IMessage>> upgoingMessageCreatorDict = new Dictionary<FunctionCodes, Func<Memory<byte>, IMessage>>();
         public MessageFactory()
         {
-            upgoingMessageCreatorDict[FunctionCodes.M2F] = t => new M2F_Up(t);
-            upgoingMessageCreatorDict[FunctionCodes.M30] = t => new M30_Up(t);
-            upgoingMessageCreatorDict[FunctionCodes.M31] = t => new M31_Up(t);
-            upgoingMessageCreatorDict[FunctionCodes.M32] = t => new M32_Up(t);
-            upgoingMessageCreatorDict[FunctionCodes.M33] = t => new M33_Up(t);
-            upgoingMessageCreatorDict[FunctionCodes.M34] = t => new M34_Up(t);
+            upgoingMessageCreatorDict[FunctionCodes.M2F] = t => new M_2F_Up(t);
+            upgoingMessageCreatorDict[FunctionCodes.M30] = t => new M_30_Up(t);
+            upgoingMessageCreatorDict[FunctionCodes.M31] = t => new M_31_Up(t);
+            upgoingMessageCreatorDict[FunctionCodes.M32] = t => new M_32_Up(t);
+            upgoingMessageCreatorDict[FunctionCodes.M33] = t => new M_33_Up(t);
+            upgoingMessageCreatorDict[FunctionCodes.M34] = t => new M_34_Up(t);
         }
 
         public async Task<Tuple<int, IMessage>> ReadMessage(

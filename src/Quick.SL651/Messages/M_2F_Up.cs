@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 namespace Quick.SL651.Messages
 {
     /// <summary>
-    /// 测试报上行报文
+    /// 链路维持报上行报文
     /// </summary>
-    public class M30_Up : AbstractMessageWithPointData
+    public class M_2F_Up : AbstractMessage
     {
-        public M30_Up(Memory<byte> t)
+        public M_2F_Up(Memory<byte> t)
             : base(t)
         {
 

@@ -133,7 +133,7 @@ namespace Quick.SL651
                 if (WorkMode != WorkMode.M1)
                 {
                     //确认消息
-                    var confirmMessage = new MConfirm_Down(message.SerialNumber, DateTime.Now);
+                    var confirmMessage = new M_Confirm_Down(message.SerialNumber, DateTime.Now);
                     switch (WorkMode)
                     {
                         case WorkMode.M2:

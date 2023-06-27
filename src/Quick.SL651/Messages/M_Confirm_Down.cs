@@ -7,14 +7,13 @@ using System.Threading.Tasks;
 namespace Quick.SL651.Messages
 {
     /// <summary>
-    /// 遥测站定时报上行报文
+    /// 确认下行报文
     /// </summary>
-    public class M32_Up : AbstractMessageWithPointData
+    public class M_Confirm_Down : AbstractMessage
     {
-        public M32_Up(Memory<byte> t)
-            : base(t)
+        public M_Confirm_Down(ushort serialNumber, DateTime sendTime)
+            : base(serialNumber, sendTime)
         {
-
         }
     }
 }

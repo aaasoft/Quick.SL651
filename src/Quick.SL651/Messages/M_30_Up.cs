@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 namespace Quick.SL651.Messages
 {
     /// <summary>
-    /// 遥测站加报报上行报文
+    /// 测试报上行报文
     /// </summary>
-    public class M33_Up : AbstractMessageWithPointData
+    public class M_30_Up : AbstractMessageWithPointData
     {
-        public M33_Up(Memory<byte> memory)
-            : base(memory)
+        public M_30_Up(Memory<byte> t)
+            : base(t)
         {
 
         }

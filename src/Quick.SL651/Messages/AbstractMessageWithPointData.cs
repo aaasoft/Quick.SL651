@@ -1,4 +1,5 @@
-﻿using Quick.SL651.Enums;
+﻿using Quick.SL651.Elements;
+using Quick.SL651.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,6 +35,10 @@ namespace Quick.SL651.Messages
         /// 观测时间
         /// </summary>
         public DateTime ObservedTime { get; set; }
+        /// <summary>
+        /// 要素值数组
+        /// </summary>
+        public ElementData[] ElementDatas { get; set; }
 
         //读取测站编码引导符
         private int ReadST(Span<byte> span)
@@ -97,7 +102,14 @@ namespace Quick.SL651.Messages
             //读取观测时间
             span = span.Slice(ReadObservedTime(span));
             //读取要素
-
+            List<ElementData> elementDataList = new List<ElementData>();
+            while (span.Length > 0)
+            {
+                var elementData = new ElementData();
+                span = elementData.Load(span);
+                elementDataList.Add(elementData);
+            }
+            ElementDatas = elementDataList.ToArray();
             return span;
         }
     }
