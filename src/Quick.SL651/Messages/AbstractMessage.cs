@@ -25,11 +25,11 @@ namespace Quick.SL651.Messages
 
         public AbstractMessage(Memory<byte> memory)
         {
-            Parse(memory.Span);
+            Load(memory.Span);
         }
 
         //读取流水号
-        private int ReadSerialNumber(Span<byte> span)
+        private Span<byte> ReadSerialNumber(Span<byte> span)
         {
             var serialNumberSpan = span.Slice(0, 2);
             if (BitConverter.IsLittleEndian)
@@ -37,15 +37,15 @@ namespace Quick.SL651.Messages
             SerialNumber = BitConverter.ToUInt16(serialNumberSpan);
             if (BitConverter.IsLittleEndian)
                 serialNumberSpan.Reverse();
-            return serialNumberSpan.Length;
+            return span.Slice(serialNumberSpan.Length);
         }
 
         //读取发报时间
-        private int ReadSendTime(Span<byte> span)
+        private Span<byte> ReadSendTime(Span<byte> span)
         {
             var sendTimeSpan = span.Slice(0, 6);
             SendTime = ReadTimeFromBytes(sendTimeSpan);
-            return sendTimeSpan.Length;
+            return span.Slice(sendTimeSpan.Length);
         }
 
         protected DateTime ReadTimeFromBytes(Span<byte> span)
@@ -63,12 +63,12 @@ namespace Quick.SL651.Messages
             throw new IOException("解析时间失败，字节数组长度错误。");
         }
 
-        protected virtual Span<byte> Parse(Span<byte> span)
+        protected virtual Span<byte> Load(Span<byte> span)
         {
             //读取流水号
-            span = span.Slice(ReadSerialNumber(span));
+            span = ReadSerialNumber(span);
             //读取发报时间
-            span = span.Slice(ReadSendTime(span));
+            span = ReadSendTime(span);
             return span;
         }
 

@@ -17,6 +17,10 @@ namespace Quick.SL651.Elements
         /// </summary>
         public ElementCodes Code { get; set; }
         /// <summary>
+        /// 要素的值是否为数字
+        /// </summary>
+        public bool IsNumber { get; set; }
+        /// <summary>
         /// 要素名称
         /// </summary>
         public string Name { get; set; }
@@ -24,5 +28,14 @@ namespace Quick.SL651.Elements
         /// 要素单位
         /// </summary>
         public string Unit { get; set; }
+
+        public ElementDefine() { }
+        public ElementDefine(ElementCodes code, bool isNumber, string name, string unit)
+        {
+            Code = code;
+            IsNumber = isNumber;
+            Name = name;
+            Unit = unit;
+        }
     }
 }

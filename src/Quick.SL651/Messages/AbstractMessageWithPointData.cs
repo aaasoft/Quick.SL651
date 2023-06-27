@@ -41,42 +41,42 @@ namespace Quick.SL651.Messages
         public ElementData[] ElementDatas { get; set; }
 
         //读取测站编码引导符
-        private int ReadST(Span<byte> span)
+        private Span<byte> ReadST(Span<byte> span)
         {
             if (!span.StartsWith(ST))
                 throw new IOException($"意外的字符：0x{span[0].ToString("X2")}-0x{span[1].ToString("X2")}。预期字符：测站编码引导符(0x{ST[0].ToString("X2")}或者0x{ST[1].ToString("X2")})");
-            return ST.Length;
+            return span.Slice(ST.Length);
         }
 
         //读取遥测站地址
-        private int ReadTelemetryStationAddress(Span<byte> span)
+        private Span<byte> ReadTelemetryStationAddress(Span<byte> span)
         {
             TelemetryStationAddress = span.Slice(0, 5).ToArray();
             TelemetryStationAddress_Text = new Span<byte>(TelemetryStationAddress).BCD_Decode();
-            return TelemetryStationAddress.Length;
+            return span.Slice(TelemetryStationAddress.Length);
         }
 
         //读取遥测站分类码
-        private int ReadTelemetryStationType(Span<byte> span)
+        private Span<byte> ReadTelemetryStationType(Span<byte> span)
         {
             TelemetryStationType = (TelemetryStationType)span[0];
-            return 1;
+            return span.Slice(1);
         }
 
         //读取观测时间引导符
-        private int ReadTT(Span<byte> span)
+        private Span<byte> ReadTT(Span<byte> span)
         {
             if (!span.StartsWith(TT))
                 throw new IOException($"意外的字符：0x{span[0].ToString("X2")}-0x{span[1].ToString("X2")}。预期字符：观测时间引导符(0x{TT[0].ToString("X2")}或者0x{TT[1].ToString("X2")})");
-            return TT.Length;
+            return span.Slice(TT.Length);
         }
 
         //读取观测时间
-        private int ReadObservedTime(Span<byte> span)
+        private Span<byte> ReadObservedTime(Span<byte> span)
         {
             var sendTimeSpan = span.Slice(0, 5);
             ObservedTime = ReadTimeFromBytes(sendTimeSpan);
-            return sendTimeSpan.Length;
+            return span.Slice(sendTimeSpan.Length);
         }
 
         protected AbstractMessageWithPointData(Memory<byte> memory) : base(memory)
@@ -88,19 +88,19 @@ namespace Quick.SL651.Messages
         }
 
 
-        protected override Span<byte> Parse(Span<byte> span)
+        protected override Span<byte> Load(Span<byte> span)
         {
-            span = base.Parse(span);
+            span = base.Load(span);
             //读取测站编码引导符
-            span = span.Slice(ReadST(span));
+            span = ReadST(span);
             //读取遥测站地址
-            span = span.Slice(ReadTelemetryStationAddress(span));
+            span = ReadTelemetryStationAddress(span);
             //读取遥测站分类码
-            span = span.Slice(ReadTelemetryStationType(span));
+            span = ReadTelemetryStationType(span);
             //读取观测时间引导符
-            span = span.Slice(ReadTT(span));
+            span = ReadTT(span);
             //读取观测时间
-            span = span.Slice(ReadObservedTime(span));
+            span = ReadObservedTime(span);
             //读取要素
             List<ElementData> elementDataList = new List<ElementData>();
             while (span.Length > 0)

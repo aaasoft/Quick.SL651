@@ -16,11 +16,11 @@ namespace Quick.SL651.Enums
         /// </summary>
         TT = 0xF0,
         /// <summary>
-        /// 测站编码引导符b
+        /// 测站编码引导符
         /// </summary>
         ST = 0xF1,
         /// <summary>
-        /// 人工置数°
+        /// 人工置数
         /// </summary>
         RGZS = 0xF2,
         /// <summary>
@@ -28,15 +28,15 @@ namespace Quick.SL651.Enums
         /// </summary>
         PIC = 0xF3,
         /// <summary>
-        /// 1小时内每5分钟时段雨量  (每组雨量占1字节HEX, 最大值25.4毫米，数据中不含小数点；FFH表示非法数据。)
+        /// 1小时内每5分钟时段雨量
         /// </summary>
         DRP = 0xF4,
         /// <summary>
-        /// 1小时内5分钟间隔相对水位1(每组水位占2字节HEX, 分辨力是为厘米，最大值为655.34米，数据中不含小数点；FFH表示非法数据); 对于河道、闸坝(泵)站分别表示河道水位、闸(站)上水位。
+        /// 1小时内5分钟间隔相对水位1
         /// </summary>
         DRZ1 = 0xF5,
         /// <summary>
-        /// 1小时内5分钟间隔相对水位2;对于闸坝(泵)站表示闸(站)下水位。
+        /// 1小时内5分钟间隔相对水位2
         /// </summary>
         DRZ2 = 0xF6,
         /// <summary>

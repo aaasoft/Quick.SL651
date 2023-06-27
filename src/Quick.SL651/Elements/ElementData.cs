@@ -30,7 +30,7 @@ namespace Quick.SL651.Elements
         /// <summary>
         /// 数字值
         /// </summary>
-        public double NumberValue { get; set; }
+        public double? NumberValue { get; set; }
 
         public Span<byte> Load(Span<byte> span)
         {
@@ -48,12 +48,16 @@ namespace Quick.SL651.Elements
             var valueSpan = span.Slice(0, ByteCount);
             Value = valueSpan.ToArray();
             StringValue = valueSpan.BCD_Decode();
-            double numberValue;
-            if (double.TryParse(StringValue, out numberValue))
+            var elementDefine = ElementFactory.Instance.GetElementDefine(Code);
+            if (elementDefine.IsNumber)
             {
-                if (Scale > 0)
-                    numberValue = numberValue / Math.Pow(10, Scale);
-                NumberValue = numberValue;
+                double numberValue;
+                if (double.TryParse(StringValue, out numberValue))
+                {
+                    if (Scale > 0)
+                        numberValue = numberValue / Math.Pow(10, Scale);
+                    NumberValue = numberValue;
+                }
             }
             span = span.Slice(ByteCount);
             return span;
