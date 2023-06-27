@@ -8,12 +8,12 @@ namespace Quick.SL651.Messages
         private Dictionary<byte, Func<Memory<byte>, IMessage>> upgoingMessageCreatorDict = new Dictionary<byte, Func<Memory<byte>, IMessage>>();
         public MessageFactory()
         {
-            upgoingMessageCreatorDict[链路维持报.UpgoingMessage.FunctionCode] = t => new 链路维持报.UpgoingMessage(t);
-            upgoingMessageCreatorDict[测试报.UpgoingMessage.FunctionCode] = t => new 测试报.UpgoingMessage(t);
-            upgoingMessageCreatorDict[均匀时段水文信息报.UpgoingMessage.FunctionCode] = t => new 均匀时段水文信息报.UpgoingMessage(t);
-            upgoingMessageCreatorDict[遥测站定时报.UpgoingMessage.FunctionCode] = t => new 遥测站定时报.UpgoingMessage(t);
-            upgoingMessageCreatorDict[遥测站加报报.UpgoingMessage.FunctionCode] = t => new 遥测站加报报.UpgoingMessage(t);
-            upgoingMessageCreatorDict[遥测站小时报.UpgoingMessage.FunctionCode] = t => new 遥测站小时报.UpgoingMessage(t);
+            upgoingMessageCreatorDict[M2F_Up.FunctionCode] = t => new 链路维持报.M2F_Up(t);
+            upgoingMessageCreatorDict[M30_Up.FunctionCode] = t => new 测试报.M30_Up(t);
+            upgoingMessageCreatorDict[M31_Up.FunctionCode] = t => new 均匀时段水文信息报.M31_Up(t);
+            upgoingMessageCreatorDict[M32_Up.FunctionCode] = t => new 遥测站定时报.M32_Up(t);
+            upgoingMessageCreatorDict[M33_Up.FunctionCode] = t => new 遥测站加报报.M33_Up(t);
+            upgoingMessageCreatorDict[M34_Up.FunctionCode] = t => new 遥测站小时报.M34_Up(t);
         }
 
         public async Task<Tuple<int, IMessage>> ReadMessage(

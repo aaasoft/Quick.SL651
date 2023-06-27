@@ -4,13 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Quick.SL651.Messages.遥测站定时报
+namespace Quick.SL651.Messages
 {
-    public class UpgoingMessage : AbstractMessage
+    /// <summary>
+    /// 遥测站定时报上行报文
+    /// </summary>
+    public class M32_Up : AbstractMessage
     {
         public const byte FunctionCode = 0x32;
 
-        public UpgoingMessage(Memory<byte> t)
+        public M32_Up(Memory<byte> t)
             : base(t)
         {
 
