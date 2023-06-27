@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace Quick.SL651.Messages.遥测站加报报
 {
-    public class UpgoingMessage : AbstractMessage
+    public class UpgoingMessage : AbstractMessageWithPointData
     {
         public const byte FunctionCode = 0x33;
 
-        public UpgoingMessage(Memory<byte> t)
-            : base(t)
+        public UpgoingMessage(Memory<byte> memory)
+            : base(memory)
         {
 
         }
