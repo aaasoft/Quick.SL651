@@ -11,7 +11,6 @@ namespace Quick.SL651.Messages
     /// </summary>
     public class M2F_Up : AbstractMessage
     {
-        public const byte FunctionCode = 0x2F;
         public M2F_Up(Memory<byte> t)
             : base(t)
         {

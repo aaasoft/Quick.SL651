@@ -1,19 +1,20 @@
-﻿using Quick.SL651.Utils;
+﻿using Quick.SL651.Enums;
+using Quick.SL651.Utils;
 
 namespace Quick.SL651.Messages
 {
     public class MessageFactory
     {
         public static MessageFactory Instance { get; } = new MessageFactory();
-        private Dictionary<byte, Func<Memory<byte>, IMessage>> upgoingMessageCreatorDict = new Dictionary<byte, Func<Memory<byte>, IMessage>>();
+        private Dictionary<FunctionCodes, Func<Memory<byte>, IMessage>> upgoingMessageCreatorDict = new Dictionary<FunctionCodes, Func<Memory<byte>, IMessage>>();
         public MessageFactory()
         {
-            upgoingMessageCreatorDict[M2F_Up.FunctionCode] = t => new 链路维持报.M2F_Up(t);
-            upgoingMessageCreatorDict[M30_Up.FunctionCode] = t => new 测试报.M30_Up(t);
-            upgoingMessageCreatorDict[M31_Up.FunctionCode] = t => new 均匀时段水文信息报.M31_Up(t);
-            upgoingMessageCreatorDict[M32_Up.FunctionCode] = t => new 遥测站定时报.M32_Up(t);
-            upgoingMessageCreatorDict[M33_Up.FunctionCode] = t => new 遥测站加报报.M33_Up(t);
-            upgoingMessageCreatorDict[M34_Up.FunctionCode] = t => new 遥测站小时报.M34_Up(t);
+            upgoingMessageCreatorDict[FunctionCodes.M2F] = t => new M2F_Up(t);
+            upgoingMessageCreatorDict[FunctionCodes.M30] = t => new M30_Up(t);
+            upgoingMessageCreatorDict[FunctionCodes.M31] = t => new M31_Up(t);
+            upgoingMessageCreatorDict[FunctionCodes.M32] = t => new M32_Up(t);
+            upgoingMessageCreatorDict[FunctionCodes.M33] = t => new M33_Up(t);
+            upgoingMessageCreatorDict[FunctionCodes.M34] = t => new M34_Up(t);
         }
 
         public async Task<Tuple<int, IMessage>> ReadMessage(

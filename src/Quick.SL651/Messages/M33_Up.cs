@@ -11,8 +11,6 @@ namespace Quick.SL651.Messages
     /// </summary>
     public class M33_Up : AbstractMessageWithPointData
     {
-        public const byte FunctionCode = 0x33;
-
         public M33_Up(Memory<byte> memory)
             : base(memory)
         {

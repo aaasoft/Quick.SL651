@@ -162,13 +162,13 @@ namespace Quick.SL651
             _ = beginReadData();
         }
 
-        public void SendDowngoingMessage(byte functionCode, IMessage message, byte endMark)
+        public void SendDowngoingMessage(FunctionCodes functionCode, IMessage message, byte endMark)
         {
             lock (this)
                 inner_SendDowngoingMessage(functionCode, message, endMark);
         }
 
-        private void inner_SendDowngoingMessage(byte functionCode, IMessage message, byte endMark)
+        private void inner_SendDowngoingMessage(FunctionCodes functionCode, IMessage message, byte endMark)
         {
             var ms = new MemoryStream(write_buffer);
             //写入帧起始符
@@ -190,7 +190,7 @@ namespace Quick.SL651
             //写入密码
             ms.Write(TelemetryStationInfo.Password);
             //写入功能码
-            ms.WriteByte(functionCode);
+            ms.WriteByte((byte)functionCode);
             //写入报文上下行标识和长度
             var isUpgoingAndMessageLengthIndex = Convert.ToInt32(ms.Position);
             var isUpgoingAndMessageLengthSpan = new Span<byte>(write_buffer, isUpgoingAndMessageLengthIndex, 2);

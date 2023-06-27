@@ -11,8 +11,6 @@ namespace Quick.SL651.Messages
     /// </summary>
     public class M31_Up : AbstractMessage
     {
-        public const byte FunctionCode = 0x31;
-
         public M31_Up(Memory<byte> t)
             : base(t)
         {

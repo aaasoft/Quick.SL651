@@ -68,7 +68,7 @@ namespace Quick.SL651
         /// <summary>
         /// 功能码
         /// </summary>
-        public byte FunctionCode { get; set; }
+        public FunctionCodes FunctionCode { get; set; }
         /// <summary>
         /// 是否上行
         /// </summary>
@@ -182,7 +182,7 @@ namespace Quick.SL651
         private async Task<int> ReadFunctionCode(Stream stream, byte[] read_buffer, int bufferStartIndex, CancellationToken cancellationToken, int readTimeout)
         {
             bufferStartIndex += await TransportUtils.ReadData(FrameEncoding, stream, read_buffer, bufferStartIndex, 1, cancellationToken, readTimeout);
-            FunctionCode = read_buffer[bufferStartIndex - 1];
+            FunctionCode = (FunctionCodes)read_buffer[bufferStartIndex - 1];
             return bufferStartIndex;
         }
 
