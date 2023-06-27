@@ -14,12 +14,8 @@ namespace Quick.SL651
         /// </summary>
         public MessageFrameInfo FrameInfo { get; set; }
         /// <summary>
-        /// 上行报文
+        /// 报文
         /// </summary>
-        public IMessage UpgoingMessage { get; set; }
-        /// <summary>
-        /// 下行报文
-        /// </summary>
-        public IMessage DowngoingMessage { get; set; }
+        public IMessage Message { get; set; }
     }
 }

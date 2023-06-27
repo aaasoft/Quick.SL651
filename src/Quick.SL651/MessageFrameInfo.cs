@@ -190,9 +190,11 @@ namespace Quick.SL651
         private async Task<int> ReadIsUpgoingAndMessageLength(Stream stream, byte[] read_buffer, int bufferStartIndex, CancellationToken cancellationToken, int readTimeout)
         {
             bufferStartIndex += await TransportUtils.ReadData(FrameEncoding, stream, read_buffer, bufferStartIndex, 2, cancellationToken, readTimeout);
-            read_buffer[bufferStartIndex] = read_buffer[bufferStartIndex - 2];
-            read_buffer[bufferStartIndex] &= 0xF0;
-            var isUpgoing = read_buffer[bufferStartIndex] == 0;
+            var b0 = read_buffer[bufferStartIndex - 2];
+            var b1 = read_buffer[bufferStartIndex - 1];
+            //解析是否上行
+            b0 &= 0xF0;
+            var isUpgoing = b0 == 0;
             if (IsUpgoing != isUpgoing)
             {
                 if (IsUpgoing)
@@ -200,19 +202,14 @@ namespace Quick.SL651
                 else
                     throw new IOException("预期接收下行报文，却收到了上行报文");
             }
-            read_buffer[bufferStartIndex] = read_buffer[bufferStartIndex - 2];
-            read_buffer[bufferStartIndex + 1] = read_buffer[bufferStartIndex - 1];
-            read_buffer[bufferStartIndex] &= 0x0F;
-            //如果CPU是小端字节序，则交换
+            //解析报文长度
+            b0 = read_buffer[bufferStartIndex - 2];
+            b0 &= 0x0F;
+            //如果CPU是小端字节序，则交换位置解析
             if (BitConverter.IsLittleEndian)
-            {
-                var tmpByte = read_buffer[bufferStartIndex];
-                read_buffer[bufferStartIndex] = read_buffer[bufferStartIndex + 1];
-                read_buffer[bufferStartIndex + 1] = tmpByte;
-            }
-            MessageLength = BitConverter.ToInt16(read_buffer, bufferStartIndex);
-            read_buffer[bufferStartIndex] = 0;
-            read_buffer[bufferStartIndex + 1] = 0;
+                MessageLength = BitConverter.ToInt16(new byte[] { b1, b0 });
+            else
+                MessageLength = BitConverter.ToInt16(new byte[] { b0, b1 });
             return bufferStartIndex;
         }
 
@@ -242,33 +239,26 @@ namespace Quick.SL651
         {
             bufferStartIndex += await TransportUtils.ReadData(FrameEncoding, stream, read_buffer, bufferStartIndex, 3, cancellationToken, readTimeout);
             //解析包总数
-            read_buffer[bufferStartIndex] = read_buffer[bufferStartIndex - 2];
-            read_buffer[bufferStartIndex + 1] = read_buffer[bufferStartIndex - 1];
-            read_buffer[bufferStartIndex + 1] &= 0xF0;
-            //如果CPU是小端字节序，则交换
+            var b0 = read_buffer[bufferStartIndex - 2];
+            var b1 = read_buffer[bufferStartIndex - 1];
+            b1 &= 0xF0;
+
+            //如果是小端字节序，则交换位置解析
             if (BitConverter.IsLittleEndian)
-            {
-                var tmpByte = read_buffer[bufferStartIndex];
-                read_buffer[bufferStartIndex] = read_buffer[bufferStartIndex + 1];
-                read_buffer[bufferStartIndex + 1] = tmpByte;
-            }
-            PackageCount = BitConverter.ToUInt16(read_buffer, bufferStartIndex);
+                PackageCount = BitConverter.ToUInt16(new byte[] { b1, b0 });
+            else
+                PackageCount = BitConverter.ToUInt16(new byte[] { b0, b1 });
             PackageCount = Convert.ToUInt16(PackageCount >> 4);
             //解析包序列号
-            read_buffer[bufferStartIndex] = read_buffer[bufferStartIndex - 2];
-            read_buffer[bufferStartIndex + 1] = read_buffer[bufferStartIndex - 1];
-            read_buffer[bufferStartIndex] &= 0x0F;
-            //如果CPU是小端字节序，则交换
+            b0 = read_buffer[bufferStartIndex - 2];
+            b1 = read_buffer[bufferStartIndex - 1];
+            b0 &= 0x0F;
+            //如果C是小端字节序，则交换位置解析
             if (BitConverter.IsLittleEndian)
-            {
-                var tmpByte = read_buffer[bufferStartIndex];
-                read_buffer[bufferStartIndex] = read_buffer[bufferStartIndex + 1];
-                read_buffer[bufferStartIndex + 1] = tmpByte;
-            }
-            PackageIndex = BitConverter.ToUInt16(read_buffer, bufferStartIndex);
+                PackageIndex = BitConverter.ToUInt16(new byte[] { b1, b0 });
+            else
+                PackageIndex = BitConverter.ToUInt16(new byte[] { b0, b1 });
 
-            read_buffer[bufferStartIndex] = 0;
-            read_buffer[bufferStartIndex + 1] = 0;
             return bufferStartIndex;
         }
 

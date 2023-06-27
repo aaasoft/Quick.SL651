@@ -1,9 +1,4 @@
 ﻿using Quick.SL651.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Quick.SL651.Elements
 {
@@ -19,7 +14,7 @@ namespace Quick.SL651.Elements
         /// <summary>
         /// 数据字节数
         /// </summary>
-        public int DataBytesCount { get; set; }
+        public int ByteCount { get; set; }
         /// <summary>
         /// 小数位数
         /// </summary>
@@ -44,13 +39,13 @@ namespace Quick.SL651.Elements
             span = span.Slice(1);
             //读取数据字节数和小数位数
             var b = span[0];
-            DataBytesCount = b >> 3;
+            ByteCount = b >> 3;
             b = span[0];
             b &= 0b_0000_0111;
             Scale = b;
             span = span.Slice(1);
             //读取数据
-            var valueSpan = span.Slice(0, DataBytesCount);
+            var valueSpan = span.Slice(0, ByteCount);
             Value = valueSpan.ToArray();
             StringValue = valueSpan.BCD_Decode();
             double numberValue;
@@ -60,7 +55,7 @@ namespace Quick.SL651.Elements
                     numberValue = numberValue / Math.Pow(10, Scale);
                 NumberValue = numberValue;
             }
-            span = span.Slice(DataBytesCount);
+            span = span.Slice(ByteCount);
             return span;
         }
     }

@@ -125,7 +125,7 @@ namespace Quick.SL651
                 var messageArrivedEventArgs = new MessageArrivedEventArgs()
                 {
                     FrameInfo = messageFrameInfo,
-                    UpgoingMessage = message
+                    Message = message
                 };
                 //触发报文帧已到达事件
                 MessageFrameArrived?.Invoke(this, messageArrivedEventArgs);

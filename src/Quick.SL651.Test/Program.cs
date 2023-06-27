@@ -50,7 +50,7 @@ centralStation.TelemetryStationConnected += (sender, telemetryStation) =>
     };
     telemetryStation.MessageFrameArrived += (sender2, e) =>
     {
-        Console.WriteLine($"遥测站[端点：{telemetryStation.RemoteEndPoint}]接收到报文帧：{e.UpgoingMessage.GetType().Name}");
+        Console.WriteLine($"遥测站[端点：{telemetryStation.RemoteEndPoint}]接收到功能码为[{e.FrameInfo.FunctionCode}]的报文帧：{JsonConvert.SerializeObject(e.Message, Formatting.Indented)}");
     };
 };
 centralStation.Start();
