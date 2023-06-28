@@ -19,11 +19,19 @@ namespace Quick.SL651.Messages
         /// 发报时间
         /// </summary>
         DateTime SendTime { get; }
+
+        /// <summary>
+        /// 从字节Span中读取
+        /// </summary>
+        /// <param name="span"></param>
+        /// <returns></returns>
+        Span<byte> Read(Span<byte> span);
+
         /// <summary>
         /// 写入到流
         /// </summary>
         /// <param name="stream"></param>
         /// <returns></returns>
-        int WriteTo(Stream stream);
+        int Write(Stream stream);
     }
 }

@@ -6,26 +6,21 @@ using System.Threading.Tasks;
 
 namespace Quick.SL651.Messages
 {
-    public abstract class AbstractMessage : IMessage
+    public class Message : IMessage
     {
         /// <summary>
         /// 流水号
         /// </summary>
-        public ushort SerialNumber { get; private set; }
+        public ushort SerialNumber { get; set; }
         /// <summary>
         /// 发报时间
         /// </summary>
-        public DateTime SendTime { get; private set; }
+        public DateTime SendTime { get; set; }
 
-        public AbstractMessage(ushort serialNumber, DateTime sendTime)
+        public Message()
         {
-            SerialNumber = serialNumber;
-            SendTime = sendTime;
-        }
-
-        public AbstractMessage(Memory<byte> memory)
-        {
-            Load(memory.Span);
+            SerialNumber = 0;
+            SendTime = DateTime.Now;
         }
 
         //读取流水号
@@ -63,7 +58,7 @@ namespace Quick.SL651.Messages
             throw new IOException("解析时间失败，字节数组长度错误。");
         }
 
-        protected virtual Span<byte> Load(Span<byte> span)
+        public virtual Span<byte> Read(Span<byte> span)
         {
             //读取流水号
             span = ReadSerialNumber(span);
@@ -72,7 +67,7 @@ namespace Quick.SL651.Messages
             return span;
         }
 
-        public int WriteTo(Stream stream)
+        public virtual int Write(Stream stream)
         {
             var count = 0;
             var buffer = BitConverter.GetBytes(SerialNumber);

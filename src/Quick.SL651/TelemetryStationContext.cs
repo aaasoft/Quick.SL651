@@ -48,9 +48,22 @@ namespace Quick.SL651
         public WorkMode WorkMode { get; private set; }
 
         /// <summary>
+        /// 原始数据到达时
+        /// </summary>
+        public event EventHandler<Memory<byte>> RawDataArrived;
+        /// <summary>
+        /// 原始数据发送后
+        /// </summary>
+        public event EventHandler<Memory<byte>> RawDataSent;
+
+        /// <summary>
         /// 消息帧到达时
         /// </summary>
         public event EventHandler<MessageArrivedEventArgs> MessageFrameArrived;
+        /// <summary>
+        /// 消息帧发送后
+        /// </summary>
+        public event EventHandler<MessageArrivedEventArgs> MessageFrameSent;
 
         public TelemetryStationContext(TcpClient client, CancellationToken cancellationToken, int transportTimeout, WorkMode workMode)
         {
@@ -122,18 +135,19 @@ namespace Quick.SL651
                     TelemetryStationInfo = messageFrameInfo;
                     Connected?.Invoke(this, EventArgs.Empty);
                 }
-                var messageArrivedEventArgs = new MessageArrivedEventArgs()
+                //触发原始数据到达事件
+                RawDataArrived?.Invoke(this, new Memory<byte>(read_buffer, 0, bufferStartIndex));
+                //触发报文帧已到达事件
+                MessageFrameArrived?.Invoke(this, new MessageArrivedEventArgs()
                 {
                     FrameInfo = messageFrameInfo,
                     Message = message
-                };
-                //触发报文帧已到达事件
-                MessageFrameArrived?.Invoke(this, messageArrivedEventArgs);
+                });
                 //如果工作模式不是M1
                 if (WorkMode != WorkMode.M1)
                 {
                     //确认消息
-                    var confirmMessage = new M_Confirm_Down(message.SerialNumber, DateTime.Now);
+                    var confirmMessage = new Message() { SerialNumber = message.SerialNumber };
                     switch (WorkMode)
                     {
                         case WorkMode.M2:
@@ -199,7 +213,7 @@ namespace Quick.SL651
             //写入报文开始标识
             ms.WriteByte((byte)StartMarks.STX);
             //写入报文
-            var messageLength = Convert.ToUInt16(message.WriteTo(ms));
+            var messageLength = Convert.ToUInt16(message.Write(ms));
             //修改报文长度
             if (!BitConverter.TryWriteBytes(isUpgoingAndMessageLengthSpan, messageLength))
                 throw new IOException($"写入报文长度[{messageLength}]时出错。");
@@ -240,6 +254,18 @@ namespace Quick.SL651
                     stream.Write(write_buffer, 0, messageFrameLength);
                     break;
             }
+            //触发原始数据已发送事件
+            RawDataSent?.Invoke(this, new Memory<byte>(write_buffer, 0, messageFrameLength));
+
+            MessageFrameSent?.Invoke(this, new MessageArrivedEventArgs()
+            {
+                FrameInfo = new MessageFrameInfo(WorkMode, false)
+                {
+                    FunctionCode = functionCode,
+                    EndMark = endMark
+                },
+                Message = message
+            });
         }
     }
 }

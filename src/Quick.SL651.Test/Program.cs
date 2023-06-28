@@ -1,70 +1,46 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Quick.SL651;
+using Quick.SL651.Messages;
 using System.Net;
-using System.Net.Sockets;
 
-var port = 13210;
-var test_data = new byte[] 
+var ipadress = IPAddress.Any;
+var port = 22222;
+var jsonSerializerSettings = new JsonSerializerSettings()
 {
-    0x7E,0x7E,
-    0x01,
-    0x11,0x22,0x33,0x44,0x55,
-    0xA0,0x00,
-    0x33,0x00,
-    0x35,
-    0x02,
-    0x00,0x0C,
-    0x23,0x06,0x19,0x10,0x36,0x05,
-    0xF1,0xF1,
-    0x11,0x22,0x33,0x44,0x55,
-    0x48,
-    0xF0,0xF0,
-    0x23,0x06,0x19,0x10,0x35,
-    0x22,0x19,
-    0x00,0x00,0x00,
-    0x1A,0x19,
-    0x00,0x00,0x00,
-    0x20,0x19,
-    0x00,0x00,0x00,
-    0x26,0x19,
-    0x00,0x00,0x00,
-    0x39,0x23,
-    0x00,0x00,0x00,0x00,
-    0x38,0x12,
-    0x11,0x30,
-    0x03,
-    0x76,0x35
+    Formatting = Formatting.Indented,
+    Converters = new List<JsonConverter>()
+    {
+        new StringEnumConverter()
+    }
 };
-
 var centralStation = new CentralStation(new CentralStationOptions()
 {
-    IPAddress = IPAddress.Loopback,
+    IPAddress = ipadress,
     Port = port
 });
 centralStation.TelemetryStationConnected += (sender, telemetryStation) =>
 {
-    Console.WriteLine($"遥测站[端点：{telemetryStation.RemoteEndPoint}]已连接！遥测站地址：{telemetryStation.TelemetryStationInfo.TelemetryStationAddress_Text}");
+    Console.WriteLine($"[{DateTime.Now}] 遥测站[端点：{telemetryStation.RemoteEndPoint}]已连接！遥测站地址：{telemetryStation.TelemetryStationInfo.TelemetryStationAddress_Text}");
     telemetryStation.Disconnected += (sender2, e) =>
     {
-        Console.WriteLine($"遥测站[端点：{telemetryStation.RemoteEndPoint}]的连接已断开！");
+        Console.WriteLine($"[{DateTime.Now}] 遥测站[端点：{telemetryStation.RemoteEndPoint}]的连接已断开！");
+    };
+    telemetryStation.RawDataArrived += (sender2, e) =>
+    {
+        Console.WriteLine($"[{DateTime.Now}] [{telemetryStation.TelemetryStationInfo.TelemetryStationAddress_Text}][RX]{BitConverter.ToString(e.ToArray())}");
+    };
+    telemetryStation.RawDataSent += (sender2, e) =>
+    {
+        Console.WriteLine($"[{DateTime.Now}] [{telemetryStation.TelemetryStationInfo.TelemetryStationAddress_Text}][TX]{BitConverter.ToString(e.ToArray())}");
     };
     telemetryStation.MessageFrameArrived += (sender2, e) =>
     {
-        Console.WriteLine($"遥测站[端点：{telemetryStation.RemoteEndPoint}]接收到功能码为[{e.FrameInfo.FunctionCode}]的报文帧：{JsonConvert.SerializeObject(e.Message, Formatting.Indented)}");
+        Console.WriteLine($"[{DateTime.Now}] [{telemetryStation.TelemetryStationInfo.TelemetryStationAddress_Text}][上行报文帧] 功能码：[{e.FrameInfo.FunctionCode}]，结束符：[{e.FrameInfo.EndMark}]，报文：{JsonConvert.SerializeObject(e.Message, jsonSerializerSettings)}");
     };
+    telemetryStation.SendDowngoingMessage(Quick.SL651.Enums.FunctionCodes.M37, new Message(), Quick.SL651.Enums.EndMarks.ENQ);
 };
 centralStation.Start();
-Console.WriteLine("中心站已启动！");
-_ = Task.Run(async () =>
-{
-    var client = new TcpClient();
-    client.Connect(IPAddress.Loopback, port);
-    var stream = client.GetStream();
-    for (var i = 0; i < 10; i++)
-    {
-        await Task.Delay(5000);
-        await stream.WriteAsync(test_data);
-    }
-});
+Console.WriteLine($"中心站已启动！监听端点：{ipadress}:{port}");
 Console.ReadLine();
 centralStation.Stop();

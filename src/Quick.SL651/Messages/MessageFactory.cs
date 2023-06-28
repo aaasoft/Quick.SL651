@@ -6,15 +6,19 @@ namespace Quick.SL651.Messages
     public class MessageFactory
     {
         public static MessageFactory Instance { get; } = new MessageFactory();
-        private Dictionary<FunctionCodes, Func<Memory<byte>, IMessage>> upgoingMessageCreatorDict = new Dictionary<FunctionCodes, Func<Memory<byte>, IMessage>>();
+        private Dictionary<FunctionCodes, Func<IMessage>> upgoingMessageCreatorDict = new Dictionary<FunctionCodes, Func<IMessage>>();
         public MessageFactory()
         {
-            upgoingMessageCreatorDict[FunctionCodes.M2F] = t => new M_2F_Up(t);
-            upgoingMessageCreatorDict[FunctionCodes.M30] = t => new M_30_Up(t);
-            upgoingMessageCreatorDict[FunctionCodes.M31] = t => new M_31_Up(t);
-            upgoingMessageCreatorDict[FunctionCodes.M32] = t => new M_32_Up(t);
-            upgoingMessageCreatorDict[FunctionCodes.M33] = t => new M_33_Up(t);
-            upgoingMessageCreatorDict[FunctionCodes.M34] = t => new M_34_Up(t);
+            upgoingMessageCreatorDict[FunctionCodes.M2F] = () => new Message();
+            upgoingMessageCreatorDict[FunctionCodes.M30] = () => new MessageWithElementDatas();
+            upgoingMessageCreatorDict[FunctionCodes.M31] = () => new MessageWithElementDatas();
+            upgoingMessageCreatorDict[FunctionCodes.M32] = () => new MessageWithElementDatas();
+            upgoingMessageCreatorDict[FunctionCodes.M33] = () => new MessageWithElementDatas();
+            upgoingMessageCreatorDict[FunctionCodes.M34] = () => new MessageWithElementDatas();
+            upgoingMessageCreatorDict[FunctionCodes.M37] = () => new MessageWithElementDatas();
+            upgoingMessageCreatorDict[FunctionCodes.M3A] = () => new MessageWithElementDatas();
+            upgoingMessageCreatorDict[FunctionCodes.M44] = () => new MessageWithElementDatas();
+            upgoingMessageCreatorDict[FunctionCodes.M45] = () => new M_45_Up();
         }
 
         public async Task<Tuple<int, IMessage>> ReadMessage(
@@ -31,8 +35,8 @@ namespace Quick.SL651.Messages
             if (!upgoingMessageCreatorDict.ContainsKey(frameInfo.FunctionCode))
                 throw new IOException($"无法解析报文。未知功能码：0x{frameInfo.FunctionCode.ToString("X2")}");
             var messageCreator = upgoingMessageCreatorDict[frameInfo.FunctionCode];
-            var message = messageCreator.Invoke(new Memory<byte>(read_buffer, messageStartIndex, frameInfo.MessageLength));
-            
+            var message = messageCreator.Invoke();
+            message.Read(new Span<byte>(read_buffer, messageStartIndex, frameInfo.MessageLength));
             return new Tuple<int, IMessage>(bufferStartIndex, message);
         }
     }
