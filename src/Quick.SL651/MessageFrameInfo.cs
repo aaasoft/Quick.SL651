@@ -18,42 +18,6 @@ namespace Quick.SL651
         /// HEX/BCD编码帧起始符
         /// </summary>
         public readonly static byte[] HEX_BCD_S0H = { 0x7E, 0x7E };
-        /// <summary>
-        /// 传输正文起始
-        /// </summary>
-        public readonly static byte STX = 0x02;
-        /// <summary>
-        /// 多包传输正文起始
-        /// </summary>
-        public readonly static byte SYN = 0x16;
-        /// <summary>
-        /// 上行报文结束，后续无报文
-        /// </summary>
-        public readonly static byte ETX = 0x03;
-        /// <summary>
-        /// 上行报文结束，后续有报文
-        /// </summary>
-        public readonly static byte ETB = 0x17;
-        /// <summary>
-        /// 询问
-        /// </summary>
-        public readonly static byte ENQ = 0x05;
-        /// <summary>
-        /// 传输结束，退出
-        /// </summary>
-        public readonly static byte EOT = 0x04;
-        /// <summary>
-        /// 肯定确认，继续发送
-        /// </summary>
-        public readonly static byte ACK = 0x06;
-        /// <summary>
-        /// 否定应答，反馈重发
-        /// </summary>
-        public readonly static byte NAK = 0x15;
-        /// <summary>
-        /// 传输结束，终端保持在线
-        /// </summary>
-        public readonly static byte ESC = 0x1B;
 
         public MessageFrameInfo(WorkMode workMode, bool isUpgoing)
         {
@@ -88,48 +52,12 @@ namespace Quick.SL651
         /// <summary>
         /// 报文开始符
         /// </summary>
-        public byte StartMark { get; set; }
-        /// <summary>
-        /// 报文开始符是否是STX
-        /// </summary>
-        public bool IsStartMarkSTX => StartMark == STX;
-        /// <summary>
-        /// 报文开始符是否是SYN
-        /// </summary>
-        public bool IsStartMarkSYN => StartMark == STX;
+        public StartMarks StartMark { get; set; }
         /// <summary>
         /// 报文结束符
         /// </summary>
-        public byte EndMark { get; set; }
-        /// <summary>
-        /// 报文结束符是否是ETX
-        /// </summary>
-        public bool IsEndMarkETX => EndMark == ETX;
-        /// <summary>
-        /// 报文结束符是否是ETB
-        /// </summary>
-        public bool IsEndMarkETB => EndMark == ETB;
-        /// <summary>
-        /// 报文结束符是否是ENQ
-        /// </summary>
-        public bool IsEndMarkENQ => EndMark == ENQ;
-        /// <summary>
-        /// 报文结束符是否是EOT
-        /// </summary>
-        public bool IsEndMarkEOT => EndMark == EOT;
-        /// <summary>
-        /// 报文结束符是否是ACK
-        /// </summary>
-        public bool IsEndMarkACK => EndMark == ACK;
-        /// <summary>
-        /// 报文结束符是否是NAK
-        /// </summary>
-        public bool IsEndMarkNAK => EndMark == NAK;
-        /// <summary>
-        /// 报文结束符是否是ESC
-        /// </summary>
-        public bool IsEndMarkESC => EndMark == ESC;
-
+        public EndMarks EndMark { get; set; }
+        
         //读取包头
         private async Task<int> ReadPackageHead(Stream stream, byte[] read_buffer, int bufferStartIndex, CancellationToken cancellationToken, int readTimeout)
         {
@@ -217,18 +145,18 @@ namespace Quick.SL651
         private async Task<int> ReadMessageStartMark(Stream stream, byte[] read_buffer, int bufferStartIndex, CancellationToken cancellationToken, int readTimeout)
         {
             bufferStartIndex += await TransportUtils.ReadData(FrameEncoding, stream, read_buffer, bufferStartIndex, 1, cancellationToken, readTimeout);
-            StartMark = read_buffer[bufferStartIndex - 1];
+            StartMark = (StartMarks)read_buffer[bufferStartIndex - 1];
             switch (WorkMode)
             {
                 case WorkMode.M1:
                 case WorkMode.M2:
                 case WorkMode.M4:
-                    if (!IsStartMarkSTX)
-                        throw new IOException($"意外的字符：0x{read_buffer[bufferStartIndex - 1].ToString("X2")}。预期字符：报文开始符(传输正文起始:0x{STX.ToString("X2")})");
+                    if (StartMark != StartMarks.STX)
+                        throw new IOException($"意外的字符：0x{read_buffer[bufferStartIndex - 1].ToString("X2")}。预期字符：报文开始符(传输正文起始:{StartMarks.STX})");
                     break;
                 case WorkMode.M3:
-                    if (!IsStartMarkSYN)
-                        throw new IOException($"意外的字符：0x{read_buffer[bufferStartIndex - 1].ToString("X2")}。预期字符：报文开始符(多包传输正文起始:0x{SYN.ToString("X2")})");
+                    if (StartMark != StartMarks.SYN)
+                        throw new IOException($"意外的字符：0x{read_buffer[bufferStartIndex - 1].ToString("X2")}。预期字符：报文开始符(多包传输正文起始:{StartMarks.SYN})");
                     break;
             }
             return bufferStartIndex;
@@ -296,7 +224,7 @@ namespace Quick.SL651
             //读取报文开始符
             bufferStartIndex = await ReadMessageStartMark(stream, read_buffer, bufferStartIndex, cancellationToken, readTimeout);
             //如果是多包传输
-            if (StartMark == SYN)
+            if (StartMark == StartMarks.SYN)
             {
                 //读取包总数及序列号
                 bufferStartIndex = await ReadPackageCountAndPackageIndex(stream, read_buffer, bufferStartIndex, cancellationToken, readTimeout);
@@ -331,12 +259,12 @@ namespace Quick.SL651
             //读取报文结束符
             bufferStartIndex = await ReadEndMark(stream, read_buffer, bufferStartIndex, cancellationToken, readTimeout);
             //报文结束符
-            EndMark = read_buffer[bufferStartIndex - 1];
+            EndMark = (EndMarks)read_buffer[bufferStartIndex - 1];
             if (IsUpgoing)
             {
-                if (!IsEndMarkETB
-                    && !IsEndMarkETX)
-                    throw new IOException($"意外的字符：0x{EndMark.ToString("X2")}。预期字符：报文结束符(0x{ETX.ToString("X2")}或者0x{ETB.ToString("X2")})");
+                if (EndMark != EndMarks.ETB
+                    && EndMark != EndMarks.ETX)
+                    throw new IOException($"意外的字符：0x{EndMark.ToString("X2")}。预期字符：报文结束符({EndMarks.ETX}或者{EndMarks.ETB})");
             }
             else
             {
@@ -346,18 +274,28 @@ namespace Quick.SL651
                         throw new IOException("M1工作模式没有下行帧");
                     case WorkMode.M2:
                     case WorkMode.M4:
-                        if (!IsEndMarkENQ
-                            && !IsEndMarkACK
-                            && !IsEndMarkEOT
-                            && !IsEndMarkESC)
-                            throw new IOException($"意外的字符：0x{EndMark.ToString("X2")}。预期字符：报文结束符(0x{ENQ.ToString("X2")}或者0x{ACK.ToString("X2")}或者0x{EOT.ToString("X2")}或者0x{ESC.ToString("X2")})");
+                        switch(EndMark)
+                        {
+                            case EndMarks.ENQ:
+                            case EndMarks.ACK:
+                            case EndMarks.EOT:
+                            case EndMarks.ESC:
+                                break;
+                            default:
+                                throw new IOException($"意外的字符：0x{EndMark.ToString("X2")}。预期字符：报文结束符({EndMarks.ENQ}或者{EndMarks.ACK}或者{EndMarks.EOT}或者{EndMarks.ESC})");
+                        }
                         break;
                     case WorkMode.M3:
-                        if (!IsEndMarkENQ
-                            && !IsEndMarkNAK
-                            && !IsEndMarkEOT
-                            && !IsEndMarkESC)
-                            throw new IOException($"意外的字符：0x{EndMark.ToString("X2")}。预期字符：报文结束符(0x{ENQ.ToString("X2")}或者0x{NAK.ToString("X2")}或者0x{EOT.ToString("X2")}或者0x{ESC.ToString("X2")})");
+                        switch (EndMark)
+                        {
+                            case EndMarks.ENQ:
+                            case EndMarks.NAK:
+                            case EndMarks.EOT:
+                            case EndMarks.ESC:
+                                break;
+                            default:
+                                throw new IOException($"意外的字符：0x{EndMark.ToString("X2")}。预期字符：报文结束符({EndMarks.ENQ}或者{EndMarks.NAK}或者{EndMarks.EOT}或者{EndMarks.ESC})");
+                        }
                         break;
                 }
             }

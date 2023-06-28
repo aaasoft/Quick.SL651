@@ -138,14 +138,14 @@ namespace Quick.SL651
                     {
                         case WorkMode.M2:
                         case WorkMode.M4:
-                            if (messageFrameInfo.IsEndMarkETB)
-                                SendDowngoingMessage(messageFrameInfo.FunctionCode, confirmMessage, MessageFrameInfo.ACK);
-                            else if (messageFrameInfo.IsEndMarkETX)
-                                SendDowngoingMessage(messageFrameInfo.FunctionCode, confirmMessage, MessageFrameInfo.ESC);
+                            if (messageFrameInfo.EndMark == EndMarks.ETB)
+                                SendDowngoingMessage(messageFrameInfo.FunctionCode, confirmMessage, EndMarks.ACK);
+                            else if (messageFrameInfo.EndMark == EndMarks.ETX)
+                                SendDowngoingMessage(messageFrameInfo.FunctionCode, confirmMessage, EndMarks.ESC);
                             break;
                         case WorkMode.M3:
-                            if (messageFrameInfo.IsEndMarkETX)
-                                SendDowngoingMessage(messageFrameInfo.FunctionCode, confirmMessage, MessageFrameInfo.ESC);
+                            if (messageFrameInfo.EndMark == EndMarks.ETX)
+                                SendDowngoingMessage(messageFrameInfo.FunctionCode, confirmMessage, EndMarks.ESC);
                             break;
                     }
                 }
@@ -162,13 +162,13 @@ namespace Quick.SL651
             _ = beginReadData();
         }
 
-        public void SendDowngoingMessage(FunctionCodes functionCode, IMessage message, byte endMark)
+        public void SendDowngoingMessage(FunctionCodes functionCode, IMessage message, EndMarks endMark)
         {
             lock (this)
                 inner_SendDowngoingMessage(functionCode, message, endMark);
         }
 
-        private void inner_SendDowngoingMessage(FunctionCodes functionCode, IMessage message, byte endMark)
+        private void inner_SendDowngoingMessage(FunctionCodes functionCode, IMessage message, EndMarks endMark)
         {
             var ms = new MemoryStream(write_buffer);
             //写入帧起始符
@@ -197,7 +197,7 @@ namespace Quick.SL651
             ms.WriteByte(0x80);
             ms.WriteByte(0x00);
             //写入报文开始标识
-            ms.WriteByte(MessageFrameInfo.STX);
+            ms.WriteByte((byte)StartMarks.STX);
             //写入报文
             var messageLength = Convert.ToUInt16(message.WriteTo(ms));
             //修改报文长度
@@ -214,7 +214,7 @@ namespace Quick.SL651
             isUpgoingAndMessageLengthSpan[0] = b;
 
             //写入报文结束符
-            ms.WriteByte(endMark);
+            ms.WriteByte((byte)endMark);
             ms.Flush();
 
             //计算CRC校验值
