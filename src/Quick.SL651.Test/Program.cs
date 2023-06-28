@@ -19,8 +19,9 @@ var centralStation = new CentralStation(new CentralStationOptions()
     IPAddress = ipadress,
     Port = port
 });
-centralStation.TelemetryStationConnected += (sender, telemetryStation) =>
+centralStation.TelemetryStationConnected += (sender, e) =>
 {
+    var telemetryStation = e.TelemetryStation;
     Console.WriteLine($"[{DateTime.Now}] 遥测站[端点：{telemetryStation.RemoteEndPoint}]已连接！遥测站地址：{telemetryStation.TelemetryStationInfo.TelemetryStationAddress_Text}");
     telemetryStation.Disconnected += (sender2, e) =>
     {

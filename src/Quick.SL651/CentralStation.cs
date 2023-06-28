@@ -12,7 +12,10 @@ namespace Quick.SL651
         public CentralStationOptions Options { get; private set; }
         private TcpListener tcpListener;
         private CancellationTokenSource cts;
-        public event EventHandler<TelemetryStationContext> TelemetryStationConnected;
+        /// <summary>
+        /// 遥测站已连接事件
+        /// </summary>
+        public event EventHandler<TelemetryStationConnectedEventArgs> TelemetryStationConnected;
         private List<TelemetryStationContext> telemetryStationList = new List<TelemetryStationContext>();
 
         public CentralStation(CentralStationOptions options)
@@ -64,7 +67,14 @@ namespace Quick.SL651
         private void TelemetryStation_Connected(object sender, EventArgs e)
         {
             var telemetryStation = (TelemetryStationContext)sender;
-            TelemetryStationConnected?.Invoke(this, telemetryStation);
+            var telemetryStationConnectedEventArgs = new TelemetryStationConnectedEventArgs()
+            {
+                TelemetryStation = telemetryStation
+            };
+            TelemetryStationConnected?.Invoke(this, telemetryStationConnectedEventArgs);
+            //如果不允许连接，则断开
+            if (!telemetryStationConnectedEventArgs.Allowed)
+                telemetryStation.OnError(new ApplicationException(telemetryStationConnectedEventArgs.Message));
         }
 
         public void Stop()

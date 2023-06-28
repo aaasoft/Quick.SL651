@@ -80,7 +80,7 @@ namespace Quick.SL651
             _ = beginReadData();
         }
 
-        private void onError(Exception ex)
+        internal void OnError(Exception ex)
         {
             stream?.Dispose();
             stream = null;
@@ -170,7 +170,7 @@ namespace Quick.SL651
             }
             catch (Exception ex)
             {
-                onError(ex);
+                OnError(ex);
                 return;
             }
             _ = beginReadData();

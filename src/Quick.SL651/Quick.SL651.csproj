@@ -3,6 +3,22 @@
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<PackageProjectUrl>https://github.com/aaasoft/Quick.SL651</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/aaasoft/Quick.SL651</RepositoryUrl>
+		<Copyright />
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Authors>scbeta</Authors>
+		<Version>1.0.0</Version>
+		<Company />
+		<Description>《水文监测数据通信规约》(SL651-2014)</Description>
+		<PackageIcon>logo.png</PackageIcon>
+		<PackageTags>SL651</PackageTags>
 	</PropertyGroup>
 
+	<ItemGroup>
+		<None Include="..\..\logo.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
 </Project>
