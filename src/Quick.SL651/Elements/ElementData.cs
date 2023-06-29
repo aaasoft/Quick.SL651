@@ -1,4 +1,5 @@
 ﻿using Quick.SL651.Enums;
+using System.Text;
 
 namespace Quick.SL651.Elements
 {
@@ -51,13 +52,14 @@ namespace Quick.SL651.Elements
             var elementDefine = ElementFactory.Instance.GetElementDefine(Code);
             if (elementDefine.IsNumber)
             {
+                var sb = new StringBuilder(StringValue);
+                if (Scale > 0)
+                    sb.Insert(StringValue.Length - Scale, ".");
+                StringValue = sb.ToString();
+
                 double numberValue;
                 if (double.TryParse(StringValue, out numberValue))
-                {
-                    if (Scale > 0)
-                        numberValue = numberValue / Math.Pow(10, Scale);
                     NumberValue = numberValue;
-                }
             }
             span = span.Slice(ByteCount);
             return span;
